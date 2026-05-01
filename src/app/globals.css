@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
+@theme {
+  /* ── Surface ─────────────────────────────────────── */
+  --color-surface-canvas: #F7F5F2;
+  --color-surface-card: #FFFFFF;
+  --color-surface-card-soft: #EFEDE8;
+  --color-surface-inverse: #1A1A1A;
+  --color-surface-accent: #174C3C;
+
+  /* ── Text ────────────────────────────────────────── */
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #A3A3A3;
+  --color-text-inverse: #FFFFFF;
+  --color-text-accent: #174C3C;
+
+  /* ── Brand ───────────────────────────────────────── */
+  --color-brand-primary: #174C3C;
+  --color-brand-primary-pressed: #103A2D;
+  --color-brand-primary-soft: #E8F0EC;
+
+  /* ── State ───────────────────────────────────────── */
+  --color-state-success: #16A34A;
+  --color-state-success-soft: #DCFCE7;
+  --color-state-warning: #D97706;
+  --color-state-warning-soft: #FEF3C7;
+  --color-state-danger: #B91C1C;
+  --color-state-danger-soft: #FEE2E2;
+  --color-state-info: #3E5C76;
+  --color-state-info-soft: #E5EAF0;
+  --color-state-caution: #CA8A04;
+  --color-state-caution-soft: #FEF9C3;
+
+  /* ── Score card tints (by range) ─────────────────── */
+  --color-score-low-bg: #FCEAEA;
+  --color-score-mid-bg: #FEF3C7;
+  --color-score-high-bg: #DCFCE7;
+
+  /* ── Borders ─────────────────────────────────────── */
+  --color-border-default: #E4E2DC;
+  --color-border-subtle: #EFEDE8;
+
+  /* ── Fonts ───────────────────────────────────────── */
+  --font-sans: var(--font-inter), 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* ── Type scale ──────────────────────────────────── */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 3.25rem;
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 4rem;
+  --text-display: 5rem;
+  --text-display--line-height: 5.25rem;
+  --text-score: 6rem;
+  --text-score--line-height: 6rem;
+
+  /* ── Border radius ───────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Motion tokens — consumed by Framer Motion and CSS transitions */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --motion-instant: 0ms;
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+  --motion-deliberate: 480ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (prefers-reduced-motion: reduce) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+    --motion-deliberate: 0ms;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
