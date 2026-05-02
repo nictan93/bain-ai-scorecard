@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ProgressHeader } from "@/components/scorecard/ProgressHeader";
 import { Question } from "@/components/scorecard/Question";
 import { QUESTIONS } from "@/content/questions";
+import { LANDING_COPY, IDLE_COPY } from "@/content/copy";
 import {
   determineTrack,
   getNextQuestionId,
@@ -24,6 +25,8 @@ interface AssessmentState {
   answers: Record<string, string>;
   openText: Record<string, string>;
   history: string[];
+  email: string;
+  referralCode: string;
 }
 
 const INITIAL_STATE: AssessmentState = {
@@ -33,12 +36,32 @@ const INITIAL_STATE: AssessmentState = {
   answers: {},
   openText: {},
   history: [],
+  email: "",
+  referralCode: "",
 };
+
+const PERSONAL_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
+  "live.com", "aol.com", "msn.com", "protonmail.com", "pm.me",
+  "me.com", "mac.com", "ymail.com", "googlemail.com", "yahoo.co.uk",
+  "hotmail.co.uk", "live.co.uk",
+]);
+
+function isBusinessEmail(email: string): boolean {
+  const domain = email.split("@")[1]?.toLowerCase();
+  return domain ? !PERSONAL_EMAIL_DOMAINS.has(domain) : false;
+}
 
 export default function ScorecardPage() {
   const router = useRouter();
   const [state, setState] = useState<AssessmentState>(INITIAL_STATE);
   const [direction, setDirection] = useState<1 | -1>(1);
+
+  // Idle form state
+  const [idleEmail, setIdleEmail] = useState("");
+  const [idleReferral, setIdleReferral] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [referralError, setReferralError] = useState<string | null>(null);
 
   const currentQuestion = state.currentQuestionId
     ? QUESTIONS.find((q) => q.id === state.currentQuestionId) ?? null
@@ -56,15 +79,38 @@ export default function ScorecardPage() {
       ? (state.openText[currentQuestion.id] ?? "").trim().length > 0
       : Boolean(state.answers[currentQuestion.id]));
 
-  const handleStart = useCallback(() => {
-    setState((s) => ({
-      ...s,
-      step: "in_progress",
-      currentQuestionId: "q1_routing",
-      history: ["q1_routing"],
-    }));
-    setDirection(1);
-  }, []);
+  const handleIdleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      setEmailError(null);
+      setReferralError(null);
+
+      let valid = true;
+      const email = idleEmail.trim();
+      const referral = idleReferral.trim();
+
+      if (referral && !email) {
+        setEmailError("A business email is required when using a referral code.");
+        valid = false;
+      } else if (email && !isBusinessEmail(email)) {
+        setEmailError("Please enter a business email address.");
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      setState((s) => ({
+        ...s,
+        step: "in_progress",
+        currentQuestionId: "q1_routing",
+        history: ["q1_routing"],
+        email,
+        referralCode: referral,
+      }));
+      setDirection(1);
+    },
+    [idleEmail, idleReferral]
+  );
 
   const handleChange = useCallback(
     (value: string) => {
@@ -74,7 +120,6 @@ export default function ScorecardPage() {
           return { ...s, openText: { ...s.openText, [currentQuestion.id]: value } };
         }
         const newAnswers = { ...s.answers, [currentQuestion.id]: value };
-        // Re-derive track whenever an answer changes
         const newTrack = determineTrack(newAnswers);
         return { ...s, answers: newAnswers, track: newTrack };
       });
@@ -88,7 +133,6 @@ export default function ScorecardPage() {
     const currentTrack = state.track;
 
     if (isLastQuestion(currentQuestion.id, currentTrack)) {
-      // Assessment complete — compute result and navigate
       const track = currentTrack;
       if (!track) return;
 
@@ -103,6 +147,8 @@ export default function ScorecardPage() {
         tags,
         answers: state.answers,
         openText: state.openText,
+        email: state.email,
+        referralCode: state.referralCode,
       };
 
       sessionStorage.setItem("scorecard_result", JSON.stringify(resultPayload));
@@ -158,31 +204,132 @@ export default function ScorecardPage() {
   // ── Idle (start screen) ──────────────────────────────────────────────
   if (state.step === "idle") {
     return (
-      <div className="min-h-screen flex flex-col">
-        <header className="px-6 py-5 border-b border-border-subtle">
-          <span className="text-sm font-mono font-bold text-text-primary">Bain Squared</span>
+      <div className="min-h-screen flex flex-col bg-surface-canvas">
+
+        {/* Announcement bar */}
+        <div className="bg-surface-accent text-text-inverse text-sm font-sans font-medium py-2.5 px-6 text-center">
+          <span className="opacity-80">{LANDING_COPY.announcementBar}</span>
+          {" "}
+          <a
+            href="https://bainsquared.com"
+            className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-[180ms]"
+          >
+            {LANDING_COPY.announcementCta}
+          </a>
+        </div>
+
+        {/* Header */}
+        <header className="px-4 sm:px-6 py-4">
+          <div className="max-w-[1320px] mx-auto flex items-center justify-between">
+            <span className="text-base font-sans font-extrabold text-text-primary tracking-tight">
+              Bain Squared
+            </span>
+            <nav className="flex items-center gap-2">
+              <a
+                href="https://bainsquared.com"
+                className="px-4 py-2 text-sm font-medium text-text-primary rounded-full hover:bg-surface-card-soft transition-colors duration-[180ms]"
+              >
+                About
+              </a>
+              <a
+                href="https://bainsquared.com"
+                className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
+              >
+                Talk to us
+              </a>
+            </nav>
+          </div>
         </header>
-        <main className="flex-1 flex items-center justify-center px-6">
-          <div className="max-w-lg w-full space-y-8 text-center">
-            <div className="space-y-4">
-              <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest">
-                Intangible Asset Valuation
-              </p>
-              <h1 className="text-3xl font-mono font-bold text-text-primary">
-                Readiness Assessment
+
+        <main className="flex-1 flex flex-col px-4 sm:px-6 pb-6">
+          <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
+            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-center text-center">
+
+              <h1 className="text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
+                {IDLE_COPY.headline}
               </h1>
-              <p className="text-base text-text-secondary leading-relaxed">
-                Eight questions. Under 3 minutes. You will see your score and a
-                specific next step the moment you finish.
+
+              <p className="text-lg text-text-secondary max-w-[880px] mb-10 leading-relaxed">
+                {IDLE_COPY.subheadline}
               </p>
-            </div>
-            <div className="flex flex-col gap-3 items-center">
-              <Button variant="primary" size="lg" onClick={handleStart}>
-                Start the assessment
-              </Button>
-              <p className="text-xs text-text-tertiary">
-                No account required. Your score is shown immediately on completion.
+
+              <form
+                onSubmit={handleIdleSubmit}
+                className="w-full max-w-sm space-y-5"
+                noValidate
+              >
+                <div className="space-y-3 text-left">
+                  <label
+                    htmlFor="idle_email"
+                    className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
+                  >
+                    Business email{" "}
+                    <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
+                  </label>
+                  <input
+                    id="idle_email"
+                    type="email"
+                    value={idleEmail}
+                    onChange={(e) => {
+                      setIdleEmail(e.target.value);
+                      setEmailError(null);
+                    }}
+                    placeholder="your@company.com"
+                    autoComplete="email"
+                    className={[
+                      "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
+                      "text-base text-text-primary placeholder:text-text-tertiary",
+                      "focus:outline-none focus:border-brand-primary",
+                      "transition-colors duration-[180ms]",
+                      emailError ? "border-state-danger" : "border-border-default",
+                    ].join(" ")}
+                  />
+                  {emailError && (
+                    <p className="text-xs text-state-danger">{emailError}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3 text-left">
+                  <label
+                    htmlFor="idle_referral"
+                    className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
+                  >
+                    Referral code{" "}
+                    <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
+                  </label>
+                  <input
+                    id="idle_referral"
+                    type="text"
+                    value={idleReferral}
+                    onChange={(e) => {
+                      setIdleReferral(e.target.value);
+                      setReferralError(null);
+                    }}
+                    placeholder="e.g. PARTNER2024"
+                    className={[
+                      "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
+                      "text-base text-text-primary placeholder:text-text-tertiary",
+                      "focus:outline-none focus:border-brand-primary",
+                      "transition-colors duration-[180ms]",
+                      referralError ? "border-state-danger" : "border-border-default",
+                    ].join(" ")}
+                  />
+                  {referralError && (
+                    <p className="text-xs text-state-danger">{referralError}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-center pt-1">
+                  <Button type="submit" variant="primary" size="lg">
+                    {IDLE_COPY.ctaLabel}
+                  </Button>
+                </div>
+              </form>
+
+              <p className="text-sm text-text-tertiary mt-4">
+                {IDLE_COPY.disclaimer}
               </p>
+
             </div>
           </div>
         </main>
@@ -192,7 +339,7 @@ export default function ScorecardPage() {
 
   // ── In progress ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-surface-canvas">
       <header className="px-6 py-5 border-b border-border-subtle">
         <div className="max-w-2xl mx-auto w-full">
           <ProgressHeader

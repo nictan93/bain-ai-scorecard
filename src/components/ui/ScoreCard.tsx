@@ -100,7 +100,7 @@ export function ScoreCard({ score, maxScore, label, description }: ScoreCardProp
       {/* Top section — tinted by score band */}
       <div className={`${bgClass} px-8 pt-8 pb-6 flex flex-col items-center gap-4`}>
         <GaugeArc percent={pct} />
-        <div className="text-score font-mono font-bold leading-none text-text-primary -mt-2">
+        <div className="text-score font-sans font-bold leading-none text-text-primary -mt-2">
           <Bracket color="brand">
             <AnimatedScore target={score} />
           </Bracket>
@@ -110,11 +110,11 @@ export function ScoreCard({ score, maxScore, label, description }: ScoreCardProp
 
       {/* Bottom section — white */}
       <div className="bg-surface-card px-8 py-6">
-        <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest mb-2">
+        <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest mb-2">
           {label}
         </p>
         <p className="text-sm text-text-secondary leading-relaxed">{description}</p>
-        <p className="text-xs font-mono text-text-tertiary mt-4">
+        <p className="text-xs font-sans text-text-tertiary mt-4">
           {score} / {maxScore}
         </p>
       </div>

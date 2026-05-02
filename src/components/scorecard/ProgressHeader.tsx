@@ -18,10 +18,10 @@ export function ProgressHeader({ current, total, track }: ProgressHeaderProps) {
   return (
     <div className="w-full space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-mono text-text-tertiary">
+        <span className="text-xs font-sans text-text-secondary">
           {track ? `[${TRACK_LABELS[track]}]` : "Bain Squared"}
         </span>
-        <span className="text-xs font-mono text-text-tertiary">
+        <span className="text-xs font-sans text-text-secondary">
           {current} / {total}
         </span>
       </div>

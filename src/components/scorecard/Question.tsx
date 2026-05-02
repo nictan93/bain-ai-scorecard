@@ -13,10 +13,10 @@ export function Question({ question, value, onChange }: QuestionProps) {
   if (question.type === "open_text") {
     return (
       <div className="space-y-4">
-        <div className="space-y-2">
+        <div className="space-y-2 text-left">
           <label
             htmlFor={question.id}
-            className="block text-2xl font-mono font-bold text-text-primary leading-snug"
+            className="block text-2xl font-sans font-bold text-text-primary leading-snug"
           >
             {question.prompt}
           </label>
@@ -43,8 +43,8 @@ export function Question({ question, value, onChange }: QuestionProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <p className="text-2xl font-mono font-bold text-text-primary leading-snug">
+      <div className="space-y-2 text-left">
+        <p className="text-2xl font-sans font-bold text-text-primary leading-snug">
           {question.prompt}
         </p>
         {question.helper && (

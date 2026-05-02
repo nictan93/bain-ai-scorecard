@@ -31,7 +31,7 @@ interface BracketProps {
 
 export function Bracket({ children, color = "brand", className = "" }: BracketProps) {
   return (
-    <span className={`font-mono font-bold tracking-tight ${colorClasses[color]} ${className}`}>
+    <span className={`font-sans font-bold tracking-tight ${colorClasses[color]} ${className}`}>
       <span aria-hidden="true">[</span>
       {children}
       <span aria-hidden="true">]</span>

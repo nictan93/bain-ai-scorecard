@@ -6,7 +6,7 @@ This file is loaded first by Claude Code on every session. Keep it tight, curren
 
 A two-track Intangible Asset Valuation scorecard hosted on Vercel. Routes the user to ESOP or Brand/IP, scores their answers, applies sales-segmentation tags, and lands them on a tailored CTA. It is a product surface for the Bain Squared IA Valuation pillar, not a marketing widget.
 
-Linked docs: `PRD.md` (problem, goal, scope), `PROJECT_GUIDE.md` (build phases, full architecture), `Bain_Squared_context.md` (firm-wide brand and positioning).
+Linked docs: `PRD.md` (problem, goal, scope), `PROJECT_GUIDE.md` (build phases, full architecture), `../_shared/Bain_Squared_context.md` (firm-wide brand and positioning), `../_shared/BRAND_GUIDELINES.md`, `../_shared/DESIGN_TOKENS.md`.
 
 ## Stack
 

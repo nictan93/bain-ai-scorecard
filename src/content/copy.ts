@@ -1,10 +1,12 @@
 export const LANDING_COPY = {
-  eyebrow: "Bain Squared — Intangible Asset Valuation",
-  headline: "Your intangible assets have a number.",
-  headlineSuffix: "What is it?",
-  subheadline:
-    "The scorecard gives founders, CFOs, and operators a read on their ESOP or intangible asset valuation readiness in under 3 minutes.",
+  announcementBar: "Preparing for ESOP, fundraising, or M&A?",
+  announcementCta: "Book a valuation scoping call →",
+  subheadline1a: "Most companies are valued on revenue, profit, or industry benchmarks. But your brand, customers,",
+  subheadline1b: "contracts, software, data, IP and employee option plan carry more value that you think.",
+  subheadline2a: "Take the assessment to find out whether your business has hidden value that may support",
+  subheadline2b: "ESOP valuation, fundraising, M&A, or a stronger valuation discussion.",
   ctaLabel: "Start the assessment",
+  disclaimer: "No credit card. No login. Takes under 60 seconds.",
   benefits: [
     {
       title: "Know what is at stake before the auditor does.",
@@ -19,8 +21,14 @@ export const LANDING_COPY = {
       body: "The result page names the engagement, the methodology, and the call to book. No generic follow-up. The CTA is scoped to your situation.",
     },
   ],
-  disclaimer:
-    "The scorecard does not produce a valuation. It assesses readiness and routes you to the right engagement.",
+} as const;
+
+export const IDLE_COPY = {
+  headline: "Let's get started",
+  subheadline:
+    "Add your email if you want us to save your result or send you a copy after the assessment. Your email is only used for tracking and requested follow-up. No newsletter or spam list.",
+  ctaLabel: "Start the assessment",
+  disclaimer: "Let's go.",
 } as const;
 
 export const RESULT_COPY = {

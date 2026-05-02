@@ -114,10 +114,10 @@ function ResultContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
-        <span className="text-sm font-mono font-bold text-text-primary">Bain Squared</span>
+        <span className="text-sm font-sans font-bold text-text-primary">Bain Squared</span>
         <Link
           href="/scorecard"
-          className="text-xs font-mono text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
+          className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
         >
           {RESULT_COPY.retakeLabel}
         </Link>
@@ -126,10 +126,10 @@ function ResultContent() {
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-12">
         {/* Track label */}
         <div className="space-y-1">
-          <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest">
+          <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
             {RESULT_COPY.scoreLabel}
           </p>
-          <p className="text-sm font-mono text-text-secondary">
+          <p className="text-sm font-sans text-text-secondary">
             Track:{" "}
             <Bracket color="brand" className="text-sm">
               {TRACK_LABELS[track]}
@@ -147,7 +147,7 @@ function ResultContent() {
 
         {/* Diagnosis */}
         <div className="space-y-3">
-          <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest">
+          <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
             {RESULT_COPY.diagnosisLabel}
           </p>
           <div className="flex items-center gap-3 flex-wrap">
@@ -162,10 +162,10 @@ function ResultContent() {
           {!submitted ? (
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest">
+                <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
                   {RESULT_COPY.nextStepLabel}
                 </p>
-                <h2 className="text-xl font-mono font-bold text-text-primary">
+                <h2 className="text-xl font-sans font-bold text-text-primary">
                   {RESULT_COPY.emailGateHeadline}
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
@@ -175,7 +175,7 @@ function ResultContent() {
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
                 <div className="space-y-1">
-                  <label htmlFor="email" className="text-xs font-mono text-text-secondary">
+                  <label htmlFor="email" className="text-xs font-sans text-text-secondary">
                     Email address *
                   </label>
                   <input
@@ -199,7 +199,7 @@ function ResultContent() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label htmlFor="name" className="text-xs font-mono text-text-secondary">
+                    <label htmlFor="name" className="text-xs font-sans text-text-secondary">
                       Name
                     </label>
                     <input
@@ -217,7 +217,7 @@ function ResultContent() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="company" className="text-xs font-mono text-text-secondary">
+                    <label htmlFor="company" className="text-xs font-sans text-text-secondary">
                       Company
                     </label>
                     <input
@@ -260,7 +260,7 @@ function ResultContent() {
             <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <Badge variant="success">Sent</Badge>
-                <h2 className="text-xl font-mono font-bold text-text-primary">
+                <h2 className="text-xl font-sans font-bold text-text-primary">
                   {RESULT_COPY.successHeadline}
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
@@ -269,7 +269,7 @@ function ResultContent() {
               </div>
 
               <div className="space-y-3">
-                <p className="text-xs font-mono text-text-tertiary uppercase tracking-widest">
+                <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
                   {RESULT_COPY.nextStepLabel}
                 </p>
                 <p className="text-sm text-text-secondary">{outcome.recommendedNextStep}</p>
@@ -285,7 +285,7 @@ function ResultContent() {
       </main>
 
       <footer className="px-6 py-5 border-t border-border-subtle">
-        <p className="text-xs font-mono text-text-tertiary">
+        <p className="text-xs font-sans text-text-tertiary">
           Bain Squared — Intangible Asset Valuation
         </p>
       </footer>
@@ -297,7 +297,7 @@ export default function ResultPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm font-mono text-text-tertiary">Loading result...</p>
+        <p className="text-sm font-sans text-text-tertiary">Loading result...</p>
       </div>
     }>
       <ResultContent />
