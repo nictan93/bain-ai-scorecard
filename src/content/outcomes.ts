@@ -16,95 +16,95 @@ const ESOP_BOOKING_URL = "https://calendly.com/bainsquared/ia-valuation";
 const BIP_BOOKING_URL = "https://calendly.com/bainsquared/ia-valuation";
 
 export const OUTCOMES: Outcome[] = [
-  // ── ESOP (max score 17) ───────────────────────────────────────────────
+  // ── ESOP (max score 18) ───────────────────────────────────────────────
   {
-    id: "esop_gap",
+    id: "esop_low",
     track: "esop",
     scoreRange: [0, 4],
     label: "ESOP Valuation Gap",
     description:
-      "Your answers suggest the scheme is either early-stage or has not had a formal grant-date fair value documented under SFRS(I) 2. Without that documentation, options cannot be correctly expensed and IRAS compliance at exercise becomes uncertain. A scoping call will clarify what a Black-Scholes or binomial lattice valuation would involve for your structure.",
+      "You may not need ESOP valuation immediately, but it is useful to understand the requirements before issuing options. A scoping call will clarify what a Black-Scholes or binomial lattice valuation would involve for your structure and what to prepare when the time comes.",
     recommendedNextStep: "ESOP valuation scoping",
     ctaLabel: "Book an ESOP Valuation Scoping Call",
     ctaUrl: ESOP_BOOKING_URL,
   },
   {
-    id: "esop_risk",
+    id: "esop_moderate",
     track: "esop",
-    scoreRange: [5, 9],
+    scoreRange: [5, 10],
     label: "ESOP Compliance Risk",
     description:
-      "Your score indicates a valuation gap that has not yet generated formal pressure, but will. A scheme without a current grant-date fair value under SFRS(I) 2 accumulates audit exposure with each quarter that passes. The engagement is fixed-fee: a Black-Scholes or binomial lattice valuation, delivered within four to six weeks.",
+      "You may be early, but this is a good time to prepare. ESOPs are easier to manage when the valuation, option pool, and documentation are handled before there is pressure from auditors, investors, or board members. The engagement is fixed-fee and delivered within four to six weeks.",
     recommendedNextStep: "ESOP compliance review and formal valuation",
     ctaLabel: "Book an ESOP Compliance Review Call",
     ctaUrl: ESOP_BOOKING_URL,
   },
   {
-    id: "esop_needed",
+    id: "esop_high",
     track: "esop",
-    scoreRange: [10, 13],
+    scoreRange: [11, 15],
     label: "ESOP Valuation Needed",
     description:
-      "Your score shows an active compliance or stakeholder driver with a defined grant timeline. The window between your current position and where your auditors or board need you to be is measured in weeks, not months. A formal valuation now resolves the exposure before it becomes a board-level issue.",
+      "Your answers suggest that ESOP valuation may be important for your company. If you are issuing, refreshing, or reviewing employee options, a formal valuation can help support audit, investor, and board discussions before it becomes urgent.",
     recommendedNextStep: "Formal ESOP valuation under SFRS(I) 2",
-    ctaLabel: "Book an ESOP Valuation Readiness Call",
+    ctaLabel: "Request an ESOP Valuation Quote",
     ctaUrl: ESOP_BOOKING_URL,
   },
   {
     id: "esop_urgent",
     track: "esop",
-    scoreRange: [14, 17],
+    scoreRange: [16, 18],
     label: "ESOP Valuation Urgent",
     description:
-      "Your score signals active pressure from auditors or investors, or a grant deadline within 3 months. A delay in valuation directly affects your compliance position and your ability to close what is in front of you. The first step is a readiness call to scope the work and confirm a delivery timeline against your grant schedule.",
+      "This looks time-sensitive. If auditors, investors, or board members are already asking for ESOP valuation, you should move quickly to avoid delays. The first step is a readiness call to scope the work and confirm a delivery timeline against your grant schedule.",
     recommendedNextStep: "Urgent ESOP valuation scoping and execution",
-    ctaLabel: "Book an ESOP Valuation Readiness Call",
+    ctaLabel: "Book an ESOP Valuation Call",
     ctaUrl: ESOP_BOOKING_URL,
   },
 
-  // ── Brand / IP (max score 16) ─────────────────────────────────────────
+  // ── Valuation Uplift (max score 20) ──────────────────────────────────
   {
-    id: "bip_unexplored",
+    id: "bip_low",
     track: "brand_ip",
-    scoreRange: [0, 3],
-    label: "IP Value Unexplored",
+    scoreRange: [0, 5],
+    label: "Hidden Value Unexplored",
     description:
-      "Your answers suggest the intangible assets in your business have not been formally measured, and there is no immediate external driver pushing for it. That is not unusual at this stage. A scoping call will clarify which assets could carry a defensible valuation and what would be required to produce one.",
+      "There may not be an obvious hidden value gap based on your answers. Still, it is worth reviewing whether any assets are being overlooked before your next fundraising, board discussion, or ownership conversation.",
     recommendedNextStep: "Intangible asset identification and scoping",
     ctaLabel: "Book an Intangible Asset Scoping Call",
     ctaUrl: BIP_BOOKING_URL,
   },
   {
-    id: "bip_gap",
+    id: "bip_moderate",
     track: "brand_ip",
-    scoreRange: [4, 7],
-    label: "Brand IP Valuation Gap",
+    scoreRange: [6, 12],
+    label: "Hidden Value Gap",
     description:
-      "Your score indicates assets that carry meaningful value but have not been formally documented in a way that holds up in a deal, licence negotiation, or audit. The gap between what you believe the assets are worth and what you can defend in a negotiation is where value leaks. A formal valuation closes that gap.",
+      "Your business may have hidden value, but it may not be fully organised or evidenced yet. The next step is to identify which value drivers can support a stronger valuation story before investors, buyers, or shareholders set the narrative.",
     recommendedNextStep: "Formal brand or IP valuation",
-    ctaLabel: "Book a Brand IP Valuation Scoping Call",
+    ctaLabel: "Book a Hidden Value Review Call",
     ctaUrl: BIP_BOOKING_URL,
   },
   {
-    id: "bip_needed",
+    id: "bip_high",
     track: "brand_ip",
-    scoreRange: [8, 11],
-    label: "Brand IP Valuation Needed",
+    scoreRange: [13, 17],
+    label: "Valuation Uplift Potential",
     description:
-      "Your score shows a defined driver, a transaction, a licensing deal, or a capital event, with a timeline that makes this work time-sensitive. The methodology will depend on the asset type: Relief-from-Royalty for brand and IP, income-based for software and data, Multi-Period Excess Earnings for customer relationships. The scoping call confirms which applies.",
+      "Your answers suggest that your business may be worth more than a basic revenue or profit multiple shows. The next step is to organise the evidence before speaking to investors, buyers, or shareholders — Relief-from-Royalty for brand and IP, income-based for software and data, Multi-Period Excess Earnings for customer relationships.",
     recommendedNextStep: "Formal valuation with methodology confirmed to asset type",
-    ctaLabel: "Book a Brand IP Valuation Scoping Call",
+    ctaLabel: "Book a Valuation Uplift Review",
     ctaUrl: BIP_BOOKING_URL,
   },
   {
     id: "bip_urgent",
     track: "brand_ip",
-    scoreRange: [12, 16],
-    label: "Brand IP Valuation Urgent",
+    scoreRange: [18, 20],
+    label: "Valuation Review Recommended",
     description:
-      "Your score indicates active deal pressure, an acquirer's advisors, a due diligence process, or a licensing counterparty, against a timeline that does not leave room for a slow scoping process. The first step is a readiness call to confirm scope, methodology, and delivery timeline against your deadline.",
+      "This may be time-sensitive. If a valuation discussion is coming up soon, you should prepare your hidden value evidence before investors, buyers, or shareholders set the narrative. The first step is a readiness call to confirm scope, methodology, and delivery timeline against your deadline.",
     recommendedNextStep: "Urgent intangible asset valuation scoping and execution",
-    ctaLabel: "Book a Brand IP Valuation Scoping Call",
+    ctaLabel: "Book a Valuation Review Call",
     ctaUrl: BIP_BOOKING_URL,
   },
 ];
@@ -114,7 +114,6 @@ export function getOutcome(track: Track, score: number): Outcome {
     (o) => o.track === track && score >= o.scoreRange[0] && score <= o.scoreRange[1]
   );
   if (!match) {
-    // Fallback to highest range for the track
     const trackOutcomes = OUTCOMES.filter((o) => o.track === track);
     return trackOutcomes[trackOutcomes.length - 1];
   }

@@ -19,7 +19,7 @@ interface ResultPayload {
   score: number;
   maxScore: number;
   tags: BackendTag[];
-  answers: Record<string, string>;
+  answers: Record<string, string | string[]>;
   openText: Record<string, string>;
 }
 

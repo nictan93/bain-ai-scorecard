@@ -2,20 +2,27 @@ import { QUESTIONS, type BackendTag, type Track } from "@/content/questions";
 
 export function deriveTags(
   track: Track,
-  answers: Record<string, string>
+  answers: Record<string, string | string[]>
 ): BackendTag[] {
   const tagSet = new Set<BackendTag>();
 
-  // Collect tags from every selected option across the entire question set
   for (const question of QUESTIONS) {
-    if (question.type !== "single_select" || !question.options) continue;
-    const answerId = answers[question.id];
-    if (!answerId) continue;
-    const option = question.options.find((o) => o.id === answerId);
-    option?.tags?.forEach((t) => tagSet.add(t));
+    if (question.type === "open_text" || !question.options) continue;
+
+    const answer = answers[question.id];
+    if (answer == null) continue;
+
+    if (question.type === "multi_select" && Array.isArray(answer)) {
+      for (const selectedId of answer) {
+        const option = question.options.find((o) => o.id === selectedId);
+        option?.tags?.forEach((t) => tagSet.add(t));
+      }
+    } else if (typeof answer === "string") {
+      const option = question.options.find((o) => o.id === answer);
+      option?.tags?.forEach((t) => tagSet.add(t));
+    }
   }
 
-  // Filter to tags that are valid for this track
   const esopTags = new Set<BackendTag>([
     "esop_hot_lead",
     "esop_needs_report",

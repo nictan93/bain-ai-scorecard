@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +22,7 @@ interface AssessmentState {
   step: "idle" | "in_progress" | "completed";
   currentQuestionId: string | null;
   track: Track | null;
-  answers: Record<string, string>;
+  answers: Record<string, string | string[]>;
   openText: Record<string, string>;
   history: string[];
   email: string;
@@ -63,21 +63,39 @@ export default function ScorecardPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [referralError, setReferralError] = useState<string | null>(null);
 
+  // Tracks the most recently toggled option ID for popup display
+  const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
+
+  // Reset popup whenever the question changes
+  useEffect(() => {
+    setFocusedOptionId(null);
+  }, [state.currentQuestionId]);
+
   const currentQuestion = state.currentQuestionId
     ? QUESTIONS.find((q) => q.id === state.currentQuestionId) ?? null
     : null;
 
-  const currentValue = currentQuestion
+  const currentValue: string | string[] = currentQuestion
     ? currentQuestion.type === "open_text"
       ? (state.openText[currentQuestion.id] ?? "")
-      : (state.answers[currentQuestion.id] ?? "")
+      : currentQuestion.type === "multi_select"
+      ? ((state.answers[currentQuestion.id] as string[] | undefined) ?? [])
+      : ((state.answers[currentQuestion.id] as string | undefined) ?? "")
     : "";
 
   const canAdvance =
     currentQuestion !== null &&
     (currentQuestion.type === "open_text"
       ? (state.openText[currentQuestion.id] ?? "").trim().length > 0
+      : currentQuestion.type === "multi_select"
+      ? ((state.answers[currentQuestion.id] as string[] | undefined) ?? []).length > 0
       : Boolean(state.answers[currentQuestion.id]));
+
+  // Derive popup text from the focused option on the current question
+  const currentPopupText = useMemo(() => {
+    if (!currentQuestion || !focusedOptionId) return null;
+    return currentQuestion.options?.find((o) => o.id === focusedOptionId)?.popup ?? null;
+  }, [currentQuestion, focusedOptionId]);
 
   const handleIdleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -113,18 +131,37 @@ export default function ScorecardPage() {
   );
 
   const handleChange = useCallback(
-    (value: string) => {
+    (value: string | string[], justToggled?: string) => {
       if (!currentQuestion) return;
-      setState((s) => {
-        if (currentQuestion.type === "open_text") {
-          return { ...s, openText: { ...s.openText, [currentQuestion.id]: value } };
-        }
-        const newAnswers = { ...s.answers, [currentQuestion.id]: value };
-        const newTrack = determineTrack(newAnswers);
-        return { ...s, answers: newAnswers, track: newTrack };
-      });
+
+      if (currentQuestion.type === "open_text") {
+        setState((s) => ({
+          ...s,
+          openText: { ...s.openText, [currentQuestion.id]: value as string },
+        }));
+        return;
+      }
+
+      if (currentQuestion.type === "multi_select") {
+        setState((s) => ({
+          ...s,
+          answers: { ...s.answers, [currentQuestion.id]: value as string[] },
+        }));
+        if (justToggled) setFocusedOptionId(justToggled);
+        return;
+      }
+
+      // single_select
+      const newAnswers = { ...state.answers, [currentQuestion.id]: value as string };
+      const newTrack = determineTrack(newAnswers);
+      setState((s) => ({
+        ...s,
+        answers: newAnswers,
+        track: newTrack,
+      }));
+      if (justToggled) setFocusedOptionId(justToggled);
     },
-    [currentQuestion]
+    [currentQuestion, state.answers]
   );
 
   const handleNext = useCallback(() => {
@@ -189,17 +226,13 @@ export default function ScorecardPage() {
     ? getQuestionProgress(currentQuestion.id, state.track)
     : { current: 0, total: 0 };
 
-  const isRoutingOrClarify =
-    currentQuestion?.id === "q1_routing" ||
-    currentQuestion?.id === "q2_clarify";
+  const isRoutingQuestion = currentQuestion?.id === "q1_routing";
 
-  const totalForProgress = isRoutingOrClarify
+  const totalForProgress = isRoutingQuestion
     ? progress.total
     : state.track
     ? QUESTIONS.filter((q) => q.track === state.track).length
     : 0;
-
-  const currentForProgress = isRoutingOrClarify ? progress.current : progress.current;
 
   // ── Idle (start screen) ──────────────────────────────────────────────
   if (state.step === "idle") {
@@ -345,7 +378,7 @@ export default function ScorecardPage() {
       <header className="px-6 py-5 border-b border-border-subtle">
         <div className="max-w-2xl mx-auto w-full">
           <ProgressHeader
-            current={currentForProgress}
+            current={progress.current}
             total={totalForProgress}
             track={state.track}
           />
@@ -353,7 +386,9 @@ export default function ScorecardPage() {
       </header>
 
       <main className="flex-1 flex items-start justify-center px-6 py-12">
-        <div className="max-w-2xl w-full">
+        <div className="max-w-2xl w-full space-y-4">
+
+          {/* Question — slides in/out on change */}
           <AnimatePresence mode="wait" initial={false}>
             {currentQuestion && (
               <motion.div
@@ -371,6 +406,25 @@ export default function ScorecardPage() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Popup strip — fades in when an option is selected */}
+          <AnimatePresence mode="wait">
+            {currentPopupText && (
+              <motion.div
+                key={currentPopupText}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+                className="rounded-xl border border-brand-primary/20 bg-brand-primary-soft px-5 py-4"
+              >
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  {currentPopupText}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
       </main>
 
