@@ -9,16 +9,16 @@ export const LANDING_COPY = {
   disclaimer: "No credit card. No login. Takes under 60 seconds.",
   benefits: [
     {
-      title: "Know what is at stake before the auditor does.",
-      body: "SFRS(I) 2 grant-date fair value, IRAS treatment of exercise, PPA obligations in M&A. The compliance exposure is specific. So is the diagnosis.",
+      title: "See what your numbers may not show.",
+      body: "The assessment reviews the business assets that may not show clearly in your financials, including brand, customer relationships, contracts, software, data, IP, ESOPs, and operating systems.",
     },
     {
-      title: "Score your readiness, not your aspiration.",
-      body: "Eight questions. Each one calibrated to the decisions that actually delay or derail an engagement. The score reflects where you are, not where you plan to be.",
+      title: "Know what needs to be proven.",
+      body: "A higher valuation needs proof. The assessment shows whether your value drivers are clear enough for investors, auditors, buyers, or board members to understand.",
     },
     {
-      title: "Leave with a specific next step.",
-      body: "The result page names the engagement, the methodology, and the call to book. No generic follow-up. The CTA is scoped to your situation.",
+      title: "Leave with a clear next step.",
+      body: "Your result tells you what to do next, whether that means ESOP valuation, a hidden value review, or preparing for fundraising, M&A, or shareholder discussions.",
     },
   ],
 } as const;
@@ -28,7 +28,7 @@ export const IDLE_COPY = {
   subheadline:
     "Add your email if you want us to save your result or send you a copy after the assessment. Your email is only used for tracking and requested follow-up. No newsletter or spam list.",
   ctaLabel: "Start the assessment",
-  disclaimer: "Let's go.",
+  disclaimer: "No credit card. No login. Takes under 60 seconds.",
 } as const;
 
 export const RESULT_COPY = {

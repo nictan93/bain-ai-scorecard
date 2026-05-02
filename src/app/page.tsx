@@ -74,33 +74,35 @@ export default function LandingPage() {
 
         {/* Hero card wrapper */}
         <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
-          <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-center text-center">
+          <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[480px]">
 
-            <h1 className="text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
               Your business could be{" "}
               <span className="text-state-warning">[worth]</span>{" "}
               more
-              <br />
-              than you think
+              <br className="hidden sm:inline" />
+              {" "}than you think
             </h1>
 
-            <p className="text-lg text-text-secondary mb-4 leading-relaxed">
-              {LANDING_COPY.subheadline1a}<br />{LANDING_COPY.subheadline1b}
+            <p className="text-base sm:text-lg text-text-secondary mb-4 leading-relaxed">
+              {LANDING_COPY.subheadline1a}<br className="hidden sm:inline" />{" "}{LANDING_COPY.subheadline1b}
             </p>
 
-            <p className="text-lg text-text-secondary mb-10 leading-relaxed">
-              {LANDING_COPY.subheadline2a}<br />{LANDING_COPY.subheadline2b}
+            <p className="text-base sm:text-lg text-text-secondary mb-10 leading-relaxed">
+              {LANDING_COPY.subheadline2a}<br className="hidden sm:inline" />{" "}{LANDING_COPY.subheadline2b}
             </p>
 
-            <Link href="/scorecard">
-              <Button variant="primary" size="lg">
-                {LANDING_COPY.ctaLabel}
-              </Button>
-            </Link>
+            <div className="mt-auto flex flex-col items-start sm:items-center">
+              <Link href="/scorecard">
+                <Button variant="primary" size="lg">
+                  {LANDING_COPY.ctaLabel}
+                </Button>
+              </Link>
 
-            <p className="text-sm text-text-tertiary mt-4">
-              {LANDING_COPY.disclaimer}
-            </p>
+              <p className="text-sm text-text-tertiary mt-4">
+                {LANDING_COPY.disclaimer}
+              </p>
+            </div>
 
           </div>
         </div>
@@ -110,14 +112,14 @@ export default function LandingPage() {
           {LANDING_COPY.benefits.map((benefit, i) => {
             const Icon = benefitIcons[i];
             return (
-              <div key={benefit.title} className="flex flex-col items-center text-center gap-4">
+              <div key={benefit.title} className="flex flex-col items-start sm:items-center text-left sm:text-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-brand-primary-soft text-brand-primary flex items-center justify-center shrink-0">
                   <Icon />
                 </div>
-                <h2 className="text-base font-sans font-semibold text-text-primary leading-snug">
+                <h2 className="text-sm sm:text-base font-sans font-semibold text-text-primary leading-snug">
                   {benefit.title}
                 </h2>
-                <p className="text-sm text-text-secondary leading-relaxed">
+                <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                   {benefit.body}
                 </p>
               </div>

@@ -243,92 +243,94 @@ export default function ScorecardPage() {
 
         <main className="flex-1 flex flex-col px-4 sm:px-6 pb-6">
           <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
-            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-center text-center">
+            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[480px]">
 
-              <h1 className="text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
                 {IDLE_COPY.headline}
               </h1>
 
-              <p className="text-lg text-text-secondary max-w-[880px] mb-10 leading-relaxed">
+              <p className="text-base sm:text-lg text-text-secondary max-w-[880px] mb-10 leading-relaxed">
                 {IDLE_COPY.subheadline}
               </p>
 
-              <form
-                onSubmit={handleIdleSubmit}
-                className="w-full max-w-sm space-y-5"
-                noValidate
-              >
-                <div className="space-y-3 text-left">
-                  <label
-                    htmlFor="idle_email"
-                    className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
-                  >
-                    Business email{" "}
-                    <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
-                  </label>
-                  <input
-                    id="idle_email"
-                    type="email"
-                    value={idleEmail}
-                    onChange={(e) => {
-                      setIdleEmail(e.target.value);
-                      setEmailError(null);
-                    }}
-                    placeholder="your@company.com"
-                    autoComplete="email"
-                    className={[
-                      "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                      "text-base text-text-primary placeholder:text-text-tertiary",
-                      "focus:outline-none focus:border-brand-primary",
-                      "transition-colors duration-[180ms]",
-                      emailError ? "border-state-danger" : "border-border-default",
-                    ].join(" ")}
-                  />
-                  {emailError && (
-                    <p className="text-xs text-state-danger">{emailError}</p>
-                  )}
-                </div>
+              <div className="mt-auto w-full flex flex-col items-start sm:items-center">
+                <form
+                  onSubmit={handleIdleSubmit}
+                  className="w-full max-w-sm space-y-10"
+                  noValidate
+                >
+                  <div className="space-y-3 text-left">
+                    <label
+                      htmlFor="idle_email"
+                      className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
+                    >
+                      Business email{" "}
+                      <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
+                    </label>
+                    <input
+                      id="idle_email"
+                      type="email"
+                      value={idleEmail}
+                      onChange={(e) => {
+                        setIdleEmail(e.target.value);
+                        setEmailError(null);
+                      }}
+                      placeholder="your@company.com"
+                      autoComplete="email"
+                      className={[
+                        "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
+                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "focus:outline-none focus:border-brand-primary",
+                        "transition-colors duration-[180ms]",
+                        emailError ? "border-state-danger" : "border-border-default",
+                      ].join(" ")}
+                    />
+                    {emailError && (
+                      <p className="text-xs text-state-danger">{emailError}</p>
+                    )}
+                  </div>
 
-                <div className="space-y-3 text-left">
-                  <label
-                    htmlFor="idle_referral"
-                    className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
-                  >
-                    Referral code{" "}
-                    <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
-                  </label>
-                  <input
-                    id="idle_referral"
-                    type="text"
-                    value={idleReferral}
-                    onChange={(e) => {
-                      setIdleReferral(e.target.value);
-                      setReferralError(null);
-                    }}
-                    placeholder="e.g. PARTNER2024"
-                    className={[
-                      "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                      "text-base text-text-primary placeholder:text-text-tertiary",
-                      "focus:outline-none focus:border-brand-primary",
-                      "transition-colors duration-[180ms]",
-                      referralError ? "border-state-danger" : "border-border-default",
-                    ].join(" ")}
-                  />
-                  {referralError && (
-                    <p className="text-xs text-state-danger">{referralError}</p>
-                  )}
-                </div>
+                  <div className="space-y-3 text-left">
+                    <label
+                      htmlFor="idle_referral"
+                      className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
+                    >
+                      Referral code{" "}
+                      <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
+                    </label>
+                    <input
+                      id="idle_referral"
+                      type="text"
+                      value={idleReferral}
+                      onChange={(e) => {
+                        setIdleReferral(e.target.value);
+                        setReferralError(null);
+                      }}
+                      placeholder="e.g. PARTNER2024"
+                      className={[
+                        "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
+                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "focus:outline-none focus:border-brand-primary",
+                        "transition-colors duration-[180ms]",
+                        referralError ? "border-state-danger" : "border-border-default",
+                      ].join(" ")}
+                    />
+                    {referralError && (
+                      <p className="text-xs text-state-danger">{referralError}</p>
+                    )}
+                  </div>
 
-                <div className="flex justify-center pt-1">
-                  <Button type="submit" variant="primary" size="lg">
-                    {IDLE_COPY.ctaLabel}
-                  </Button>
-                </div>
-              </form>
+                  <div className="flex justify-start sm:justify-center">
+                    <Button type="submit" variant="primary" size="lg">
+                      {IDLE_COPY.ctaLabel}
+                    </Button>
+                  </div>
+                </form>
 
-              <p className="text-sm text-text-tertiary mt-4">
-                {IDLE_COPY.disclaimer}
-              </p>
+                <p className="text-sm text-text-tertiary mt-4">
+                  {IDLE_COPY.disclaimer}
+                </p>
+              </div>
 
             </div>
           </div>
