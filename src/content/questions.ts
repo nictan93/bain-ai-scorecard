@@ -1,18 +1,19 @@
-export type Track = "esop" | "valuation_uplift";
+export type Track = "esop" | "business_value";
 
 export type ResultKey =
-  | "esop_low"
-  | "esop_moderate"
-  | "esop_high"
-  | "esop_urgent"
-  | "uplift_low"
-  | "uplift_moderate"
-  | "uplift_high"
-  | "uplift_immediate";
+  | "esop_no_need"
+  | "esop_planning"
+  | "esop_likely_needed"
+  | "esop_required"
+  | "no_clear_valuation_need"
+  | "early_value_discovery"
+  | "hidden_value_found"
+  | "business_value_review";
 
 export type DeliverableKey =
-  | "esop_startup_checklist"
-  | "esop_document_checklist"
+  | "esop_starter_checklist"
+  | "esop_valuation_checklist"
+  | "esop_valuation_document_checklist"
   | "hidden_value_checklist"
   | "investor_evidence_checklist";
 
@@ -49,7 +50,7 @@ export interface Question {
 }
 
 export const QUESTIONS: Question[] = [
-  // ── Routing ──────────────────────────────────────────────────────────
+  // ── Entry / routing question ──────────────────────────────────────────
   {
     id: "q1_routing",
     track: "universal",
@@ -59,512 +60,511 @@ export const QUESTIONS: Question[] = [
     required: true,
     options: [
       {
-        id: "q1_a",
+        id: "retain_key_employees_using_esops",
         label: "I want to retain key employees using ESOPs.",
         routesTo: "esop",
         popup:
           "Good choice. ESOPs can be a powerful way to reward key employees without relying only on higher cash salaries. The next few questions will help you understand whether you may need ESOP valuation support.",
       },
       {
-        id: "q1_b",
+        id: "already_have_esops_need_valuation_support",
         label: "I already have ESOPs and need valuation support.",
         routesTo: "esop",
+        tags: ["esop_hot_lead"],
         popup:
           "You are already in the right zone. If your company has issued options, proper valuation support may be important for audit, investor, board, or governance purposes.",
       },
       {
-        id: "q1_c",
+        id: "raising_funds_want_stronger_valuation",
         label: "I am raising funds and want a stronger valuation.",
-        routesTo: "valuation_uplift",
+        routesTo: "business_value",
         tags: ["fundraising_valuation_lead"],
         popup:
           "That makes sense. Investors usually look for evidence, not just ambition. This assessment will help identify whether your business has hidden value that could support a stronger valuation conversation.",
       },
       {
-        id: "q1_d",
+        id: "may_sell_restructure_or_bring_in_investors",
         label: "I may sell, restructure, or bring in investors.",
-        routesTo: "valuation_uplift",
+        routesTo: "business_value",
         tags: ["strategic_transaction_lead"],
         popup:
           "This is exactly when valuation matters. Before buyers, shareholders, or investors set the price, it helps to understand what value may not be obvious from your financials alone.",
       },
       {
-        id: "q1_e",
+        id: "business_worth_more_than_basic_profit_multiple",
         label: "I think my business is worth more than a basic profit multiple.",
-        routesTo: "valuation_uplift",
+        routesTo: "business_value",
         popup:
           "You may be right. Many businesses are valued too simply based on profit or revenue multiples, even when they have brand, customers, contracts, software, data, or systems that create additional value.",
       },
       {
-        id: "q1_f",
+        id: "not_sure_check_hidden_value",
         label: "I am not sure. I just want to check if there is hidden value.",
-        routesTo: "valuation_uplift",
+        routesTo: "business_value",
         popup:
           "That is a good place to start. Many business owners do not realise what counts as hidden value until they map it out clearly.",
       },
     ],
   },
 
-  // ── Track A: ESOP ────────────────────────────────────────────────────
+  // ── ESOP track (max score 18) ─────────────────────────────────────────
   {
     id: "a1",
     track: "esop",
-    order: 0,
+    order: 1,
     type: "single_select",
     prompt: "Are you already issuing employee stock options?",
     required: true,
     options: [
       {
-        id: "a1_a",
+        id: "already_issue_options",
         label: "Yes, we already issue employee stock options.",
+        score: 3,
+        tags: ["esop_hot_lead"],
+        popup:
+          "If you are already issuing options, a formal ESOP valuation is usually required to support option pricing, audit, investor review, and board governance.",
+      },
+      {
+        id: "plan_to_issue_soon",
+        label: "Not yet, but we plan to issue them soon.",
         score: 3,
         tags: ["esop_needs_report"],
         popup:
-          "Great, you are already using one of the most common ways startups reward and retain key employees. The next step is making sure the option value is properly supported.",
+          "Planning ahead is the right approach. Issuing options without a proper valuation can create problems later with auditors, investors, and employees.",
       },
       {
-        id: "a1_b",
-        label: "Not yet, but we plan to issue them soon.",
-        score: 3,
-        popup:
-          "That is a smart move to consider early. ESOPs can help you incentivise your team, but it is better to understand the valuation requirements before issuing options.",
-      },
-      {
-        id: "a1_c",
+        id: "considering_not_decided",
         label: "We are considering it but have not decided.",
-        score: 1,
-        tags: ["esop_education_lead"],
+        score: 2,
         popup:
-          "That is completely normal. ESOPs are useful, but they need to be structured carefully so employees, founders, investors, and auditors are aligned.",
+          "Understanding the valuation requirements before you decide is sensible. It helps you set realistic expectations for employees and investors.",
       },
       {
-        id: "a1_d",
+        id: "no_esop",
         label: "No, we do not issue employee stock options.",
         score: 0,
-        tags: ["esop_education_lead"],
         popup:
-          "Did you know ESOPs can help companies reward employees without relying only on fixed salary increases? Instead of paying everything in cash, part of the reward can come from giving employees upside in the company's future value.",
+          "That is fine. The assessment will help you understand whether ESOPs might be relevant for your situation in the future.",
       },
       {
-        id: "a1_e",
+        id: "not_sure_esop",
         label: "I am not sure.",
         score: 1,
         popup:
-          "No problem. Many founders and operators are not fully sure whether their company has an ESOP, an option pool, or informal equity promises. This assessment will help you understand what may need checking.",
+          "That is okay. The remaining questions will help clarify whether ESOP valuation is something you need to think about.",
       },
     ],
   },
   {
     id: "a2",
     track: "esop",
-    order: 1,
+    order: 2,
     type: "single_select",
     prompt: "Why are you thinking about ESOPs?",
     required: true,
     options: [
       {
-        id: "a2_a",
+        id: "retain_key_employees",
         label: "We want to retain key employees.",
         score: 2,
+        tags: ["esop_needs_report"],
         popup:
-          "That is one of the strongest reasons to use ESOPs. Good employees often want to feel that they are sharing in the company's upside, not just receiving a salary.",
+          "Retention-focused ESOPs are common in growth companies. The valuation is needed to set a fair option price that employees will trust.",
       },
       {
-        id: "a2_b",
+        id: "reward_early_team",
         label: "We want to reward early team members.",
         score: 2,
         popup:
-          "That makes sense. Early employees often take more risk, wear more hats, and help build value before the company becomes stable. ESOPs can be one way to recognise that contribution.",
+          "Rewarding early contributors with equity is a strong signal. A proper valuation ensures the options are priced fairly and defensible.",
       },
       {
-        id: "a2_c",
+        id: "reduce_cash_salary_pressure",
         label: "We want to reduce pressure on cash salary increases.",
         score: 2,
         popup:
-          "This is a very common startup problem. ESOPs can help balance cash constraints with long-term incentives, especially when the company is still growing.",
+          "Using equity to manage cash costs is a practical strategy, but it requires a credible option price to be meaningful to employees.",
       },
       {
-        id: "a2_d",
+        id: "investor_or_board_expect_esop",
         label: "Investors or the board expect us to have an ESOP.",
         score: 3,
         tags: ["esop_stakeholder_pressure"],
         popup:
-          "That is a strong signal. Investors and boards often expect a clear employee incentive plan because it affects hiring, retention, dilution, and future fundraising.",
+          "If investors or the board are expecting an ESOP, the valuation is likely to be scrutinised. A formal report will be needed.",
       },
       {
-        id: "a2_e",
+        id: "external_party_asked_valuation_support",
         label: "Our auditor, investor, or board has asked for proper valuation support.",
         score: 3,
         tags: ["esop_hot_lead", "esop_stakeholder_pressure"],
         popup:
-          "This is usually where valuation becomes urgent. Once an external party asks for support, internal estimates may not be enough.",
+          "A direct request from an auditor, investor, or board is a clear trigger. You should scope the valuation work as soon as possible.",
       },
       {
-        id: "a2_f",
+        id: "not_sure_how_esops_work",
         label: "We are not sure how ESOPs should work.",
         score: 1,
         tags: ["esop_education_lead"],
         popup:
-          "That is fine. ESOPs can sound technical at first, but the basic idea is simple: they give employees a way to share in the company's future value.",
+          "That is a common starting point. The assessment will help you understand what is typically required before setting up an option plan.",
       },
     ],
   },
   {
     id: "a3",
     track: "esop",
-    order: 2,
+    order: 3,
     type: "single_select",
     prompt: "Have you done a formal ESOP valuation before?",
     required: true,
     options: [
       {
-        id: "a3_a",
+        id: "yes_recently",
         label: "Yes, recently.",
         score: 1,
+        tags: ["esop_hot_lead"],
         popup:
-          "Good. Having a recent valuation puts you in a better position. The key question is whether it still reflects your current company stage, latest fundraising, and option plan.",
+          "Good. A recent valuation means you are already in the process. You may need to refresh it depending on how much time has passed or whether your cap table has changed.",
       },
       {
-        id: "a3_b",
+        id: "yes_outdated",
         label: "Yes, but it may be outdated.",
-        score: 2,
-        tags: ["esop_needs_report"],
+        score: 3,
+        tags: ["esop_hot_lead"],
         popup:
-          "That is worth reviewing. ESOP valuations can become outdated when the company raises funds, changes performance, expands, restructures, or issues new options.",
+          "An outdated valuation can create problems with auditors, investors, and employees. It is usually better to refresh it before it is challenged.",
       },
       {
-        id: "a3_c",
+        id: "no_formal_valuation",
         label: "No, we have not done one.",
         score: 3,
         tags: ["esop_needs_report"],
         popup:
-          "That is a common gap. If you are issuing options, a formal valuation can help support fair pricing and reduce questions from auditors, investors, or the board.",
+          "If you are issuing or planning to issue options without a formal valuation, you may be exposed to audit, investor, or governance risk.",
       },
       {
-        id: "a3_d",
+        id: "internal_estimates_only",
         label: "We used internal estimates only.",
-        score: 2,
-        tags: ["esop_needs_report"],
+        score: 3,
+        tags: ["esop_hot_lead"],
         popup:
-          "Internal estimates may be useful for planning, but they can be difficult to defend externally. A formal valuation report gives more support when auditors, investors, or board members ask questions.",
+          "Internal estimates are not usually accepted by auditors, investors, or boards. A formal independent valuation is typically required.",
       },
       {
-        id: "a3_e",
+        id: "not_sure_valuation",
         label: "I am not sure.",
         score: 2,
         popup:
-          "That is okay. If you are unsure, it may be worth checking your option documents, cap table, audit files, or board records before issuing or refreshing options.",
+          "That is okay. If you are not sure whether a formal valuation has been done, it is worth checking before issuing or repricing any options.",
       },
     ],
   },
   {
     id: "a4",
     track: "esop",
-    order: 3,
+    order: 4,
     type: "single_select",
     prompt: "Who is asking for the ESOP valuation?",
     required: true,
     options: [
       {
-        id: "a4_a",
+        id: "auditor",
         label: "Auditor.",
         score: 3,
         tags: ["esop_hot_lead", "esop_stakeholder_pressure"],
         popup:
-          "If your auditor is asking, the timing may matter. A proper ESOP valuation can help support audit review and reduce back-and-forth during reporting.",
+          "An auditor request is one of the clearest triggers for a formal ESOP valuation. You should move quickly to avoid delays in the audit process.",
       },
       {
-        id: "a4_b",
+        id: "investor",
         label: "Investor.",
         score: 3,
         tags: ["esop_hot_lead", "esop_stakeholder_pressure"],
         popup:
-          "If an investor is asking, they likely want comfort around option pricing, dilution, and governance. This is a good reason to make sure the valuation is properly supported.",
+          "Investors often require a formal ESOP valuation before completing due diligence. A credible report can help the process move faster.",
       },
       {
-        id: "a4_c",
+        id: "board",
         label: "Board.",
-        score: 2,
-        tags: ["esop_stakeholder_pressure"],
+        score: 3,
+        tags: ["esop_hot_lead", "esop_stakeholder_pressure"],
         popup:
-          "Board-level questions usually mean the ESOP has become a governance matter. A clear valuation helps the board understand whether the plan is fair, reasonable, and properly documented.",
+          "Board-level requests for ESOP valuation are serious. A formal report supports governance, option pricing, and board minutes.",
       },
       {
-        id: "a4_d",
+        id: "founder_management",
         label: "Founder or management team.",
         score: 2,
         popup:
-          "That is a good sign. It is better for management to prepare early than wait until auditors, investors, or employees start asking difficult questions.",
+          "Internal demand is a good starting point. It suggests the team is thinking ahead about option pricing, governance, and employee expectations.",
       },
       {
-        id: "a4_e",
+        id: "hr_people_team",
         label: "HR or people team.",
-        score: 1,
+        score: 2,
         popup:
-          "That usually means the ESOP is becoming part of compensation and retention planning. The valuation should be clear enough for both finance and people teams to explain properly.",
+          "HR-driven requests often come from the need to explain option value to employees. A formal valuation makes those conversations credible.",
       },
       {
-        id: "a4_f",
+        id: "nobody_planning_ahead",
         label: "Nobody yet. We are planning ahead.",
         score: 1,
         popup:
-          "Planning ahead is the best time to do this. It is usually easier to structure and value options before there is pressure from auditors, investors, or employees.",
+          "Planning ahead is the right approach. Understanding the valuation requirements before you need them avoids last-minute pressure.",
       },
     ],
   },
   {
     id: "a5",
     track: "esop",
-    order: 4,
+    order: 5,
     type: "single_select",
     prompt: "When do you need this solved?",
     required: true,
     options: [
       {
-        id: "a5_a",
+        id: "immediately",
         label: "Immediately.",
         score: 3,
-        tags: ["esop_hot_lead"],
         popup:
-          "This may be urgent. If an audit, fundraising, board approval, or option issuance is already underway, you should move quickly to avoid delays.",
+          "This is urgent. We can help you scope the work quickly so you are not delayed in audit, fundraising, or option issuance.",
       },
       {
-        id: "a5_b",
+        id: "within_1_month",
         label: "Within 1 month.",
         score: 3,
-        tags: ["esop_hot_lead"],
         popup:
-          "That is a near-term need. It is worth preparing the required documents early so the valuation process does not hold up your audit, fundraising, or ESOP issuance.",
+          "That is a tight window. Getting started now will help ensure the report is ready when you need it.",
       },
       {
-        id: "a5_c",
+        id: "within_3_months",
         label: "Within 3 months.",
         score: 2,
         popup:
-          "That is a good planning window. You likely have enough time to prepare properly instead of rushing the valuation at the last minute.",
+          "That is a manageable timeline. Starting the scoping conversation now gives you enough time to prepare properly.",
       },
       {
-        id: "a5_d",
+        id: "within_6_months",
         label: "Within 6 months.",
         score: 1,
         popup:
-          "That gives you time to get organised. The earlier you understand the requirements, the easier it is to avoid messy clean-up later.",
+          "You have some time, but it is worth starting the conversation early to understand what documents and decisions are needed.",
       },
       {
-        id: "a5_e",
+        id: "later_this_year",
         label: "Later this year.",
         score: 1,
         popup:
-          "Good to know. ESOP valuation may not be urgent yet, but it is worth understanding what documents and decisions you will need before the timeline gets closer.",
+          "Good to plan ahead. Understanding the requirements now means you will not be caught off guard when the timeline gets closer.",
       },
       {
-        id: "a5_f",
+        id: "no_clear_timeline",
         label: "No clear timeline yet.",
         score: 0,
         popup:
-          "That is fine. Even without a fixed timeline, this assessment can help you understand whether ESOP valuation is something you should prepare for.",
+          "That is okay. Even without a deadline, understanding the process helps you prepare before a trigger event creates urgency.",
       },
     ],
   },
   {
     id: "a6",
     track: "esop",
-    order: 5,
+    order: 6,
     type: "single_select",
     prompt: "What is your biggest concern about ESOP valuation?",
     required: true,
     options: [
       {
-        id: "a6_a",
+        id: "do_not_know_how_to_value",
         label: "We do not know how to value the options properly.",
         score: 2,
-        tags: ["esop_education_lead"],
         popup:
-          "That is very common. ESOP valuation can feel technical because it touches equity value, option pricing, dilution, and company stage. A clear report helps simplify the decision.",
+          "That is the most common concern. Option valuation uses specific financial models that require independent expertise to be credible.",
       },
       {
-        id: "a6_b",
+        id: "may_not_satisfy_auditors_investors",
         label: "We are worried the valuation may not satisfy auditors or investors.",
         score: 3,
-        tags: ["esop_stakeholder_pressure"],
+        tags: ["esop_hot_lead"],
         popup:
-          "That is a valid concern. A valuation that looks fine internally may still create problems if it is not clear, well-supported, or properly documented.",
+          "That is a legitimate concern. A formal independent valuation report is usually what auditors and investors require.",
       },
       {
-        id: "a6_c",
+        id: "avoid_overpricing_underpricing",
         label: "We want to avoid overpricing or underpricing employee options.",
         score: 2,
         popup:
-          "That is the right issue to focus on. If options are priced poorly, employees may not value them properly, and investors or auditors may question the plan later.",
+          "Pricing options correctly matters for employee trust and legal compliance. A proper valuation gives you a defensible starting point.",
       },
       {
-        id: "a6_d",
+        id: "faster_clearer_process",
         label: "We want a faster or clearer valuation process.",
         score: 2,
         popup:
-          "That is reasonable. A good ESOP valuation process should be clear, practical, and not drag your team through unnecessary complexity.",
+          "Speed and clarity are important when audit or investor deadlines are close. We can help you scope the work efficiently.",
       },
       {
-        id: "a6_e",
+        id: "comparing_providers",
         label: "We are comparing valuation providers.",
-        score: 2,
+        score: 3,
+        tags: ["esop_hot_lead"],
         popup:
-          "That is a smart step. The lowest-cost provider is not always the best fit if the report is unclear, slow, or difficult to defend during audit or investor review.",
+          "If you are already comparing providers, you clearly have a near-term need. We are happy to walk you through our approach and pricing.",
       },
       {
-        id: "a6_f",
+        id: "understand_required",
         label: "We just want to understand what is required.",
         score: 1,
         tags: ["esop_education_lead"],
         popup:
-          "Good starting point. You do not need to know everything upfront. The key is understanding when valuation is needed, what documents are required, and who will rely on the report.",
+          "Understanding the requirements before committing is sensible. We can explain the process, timeline, and documents needed.",
       },
     ],
   },
   {
     id: "a_open",
     track: "esop",
-    order: 6,
+    order: 7,
     type: "open_text",
     prompt: "Anything else worth knowing before we look at this together?",
     helper:
-      "Tell us about any specific constraints, timeline pressures, or context not captured above. There is no right or wrong answer here.",
+      "Tell us about your cap table, option pool size, auditor requirements, or any context not covered above. There is no right or wrong answer here.",
     required: false,
   },
 
-  // ── Track B: Valuation Uplift ────────────────────────────────────────
+  // ── Business Value track (max score 24) ──────────────────────────────
   {
     id: "b1",
-    track: "valuation_uplift",
-    order: 0,
+    track: "business_value",
+    order: 1,
     type: "single_select",
     prompt: "How is your company usually valued today?",
     required: true,
     options: [
       {
-        id: "b1_a",
+        id: "profit_multiple",
         label: "Profit multiple.",
-        score: 2,
+        score: 1,
         popup:
           "That is common for SMEs and traditional businesses. But a profit multiple may not capture the full value of your brand, customer base, contracts, systems, software, data, or IP.",
       },
       {
-        id: "b1_b",
+        id: "revenue_multiple",
         label: "Revenue multiple.",
-        score: 2,
+        score: 1,
         popup:
-          "That is common for startups and growth companies. But revenue alone may not explain the quality of your business, customer stickiness, technology, brand strength, or future earning power.",
+          "Revenue multiples are common in growth businesses. They may still miss value sitting in customer relationships, contracts, software, data, or IP.",
       },
       {
-        id: "b1_c",
+        id: "asset_value",
         label: "Asset value.",
-        score: 2,
+        score: 0,
         popup:
-          "That is common for asset-heavy businesses. But some of the most valuable parts of a company may not sit on the balance sheet, such as customer relationships, know-how, data, systems, and brand.",
+          "Asset-based valuation is common in asset-heavy businesses. It often misses intangible value like brand, customer relationships, and operational know-how.",
       },
       {
-        id: "b1_d",
+        id: "comparable_companies",
         label: "Comparable companies.",
-        score: 2,
+        score: 1,
         popup:
-          "Comparable companies can be useful, but they do not always explain why your company should trade at the high end or low end of the range. The details matter.",
+          "Comparable company analysis can be a useful benchmark, but it may not reflect what makes your business unique or more valuable than the average.",
       },
       {
-        id: "b1_e",
+        id: "investor_negotiation",
         label: "Investor negotiation.",
         score: 2,
+        tags: ["fundraising_valuation_lead"],
         popup:
-          "That is very common. If valuation is mostly negotiated, then your evidence matters. The stronger your proof, the stronger your position.",
+          "Negotiated valuations can work in your favour if you have a strong story, but they can also work against you if the investor controls the narrative.",
       },
       {
-        id: "b1_f",
+        id: "do_not_know",
         label: "I do not know.",
         score: 1,
         popup:
-          "That is okay. Many owners only find out how the market values their business when they raise funds, bring in investors, or explore a sale.",
+          "That is more common than you might think. Understanding how your business is currently valued is a useful first step.",
       },
     ],
   },
   {
     id: "b2",
-    track: "valuation_uplift",
-    order: 1,
+    track: "business_value",
+    order: 2,
     type: "single_select",
     prompt: "Do you feel this valuation method misses important parts of your business?",
     required: true,
     options: [
       {
-        id: "b2_a",
+        id: "yes_definitely",
         label: "Yes, definitely.",
         score: 3,
         popup:
           "That is exactly the gap this assessment is designed to explore. Many businesses have value that does not show up clearly in revenue, profit, or asset value alone.",
       },
       {
-        id: "b2_b",
+        id: "maybe",
         label: "Maybe.",
         score: 2,
         popup:
-          "That is worth checking. Sometimes the hidden value is obvious only after you map out the brand, customers, contracts, software, data, IP, or systems behind the business.",
+          "A partial gap is still worth exploring. Even if some value is captured, there may be more that is being overlooked.",
       },
       {
-        id: "b2_c",
+        id: "not_sure_bv",
         label: "Not sure.",
         score: 1,
         popup:
-          "That is normal. Many business owners know their company is valuable, but they have not broken down exactly where that extra value comes from.",
+          "That is a fair answer. The remaining questions will help you identify whether there are value drivers that your current valuation method may be missing.",
       },
       {
-        id: "b2_d",
+        id: "no_bv",
         label: "No.",
         score: 0,
         popup:
-          "That is useful to know. Even if the current method feels fair, it may still be worth checking whether any value drivers are being overlooked.",
+          "That is useful to know. The assessment will still help you confirm whether there are any areas of hidden value worth understanding.",
       },
     ],
   },
   {
     id: "b3",
-    track: "valuation_uplift",
-    order: 2,
+    track: "business_value",
+    order: 3,
     type: "multi_select",
     prompt: "What do you think your current valuation does not fully capture?",
-    helper: "Select all that apply.",
     required: true,
     cap: 6,
     options: [
       {
-        id: "b3_a",
+        id: "brand_or_reputation",
         label: "Brand or reputation.",
         score: 1,
         tags: ["brand_valuation_lead"],
         popup:
-          "Brand can create real business value when it helps you win customers, charge better prices, reduce sales friction, or build trust faster than competitors.",
+          "Brand value is real but often invisible in financial statements. It can influence customer loyalty, pricing power, and acquisition value.",
       },
       {
-        id: "b3_b",
+        id: "customer_relationships",
         label: "Customer relationships.",
         score: 1,
-        tags: ["brand_valuation_lead"],
         popup:
-          "Customer relationships can be valuable because buyers and investors care about repeat business, loyalty, retention, and how difficult it would be for customers to switch away.",
+          "Strong customer relationships can reduce churn, increase lifetime value, and make the business more defensible. These are often undervalued.",
       },
       {
-        id: "b3_c",
+        id: "repeat_customers_or_recurring_revenue",
         label: "Repeat customers or recurring revenue.",
         score: 2,
         popup:
           "This is a strong value signal. Repeat and recurring revenue can make a business more predictable, which may support a stronger valuation conversation.",
       },
       {
-        id: "b3_d",
+        id: "long_term_contracts",
         label: "Long-term contracts.",
         score: 2,
         popup:
-          "Long-term contracts can reduce uncertainty. If your future revenue is already partly locked in, that can make your business more attractive to investors or buyers.",
+          "Contracts provide revenue visibility and reduce risk. They can be a meaningful component of business value if properly documented.",
       },
       {
-        id: "b3_e",
+        id: "software_platform_app_or_internal_technology",
         label: "Software, platform, app, or internal technology.",
         score: 2,
         tags: ["software_data_valuation_lead"],
@@ -572,107 +572,105 @@ export const QUESTIONS: Question[] = [
           "Technology can create value if it improves efficiency, supports customers, creates data, reduces manual work, or gives the business an advantage competitors do not have.",
       },
       {
-        id: "b3_f",
+        id: "data_or_customer_database",
         label: "Data or customer database.",
         score: 1,
         tags: ["software_data_valuation_lead"],
         popup:
-          "Data can be valuable when it helps you understand customers, improve sales, personalise service, automate decisions, or create insights competitors cannot easily replicate.",
+          "Data assets can be valuable if they are structured, maintained, and used to drive decisions or customer outcomes.",
       },
       {
-        id: "b3_g",
+        id: "ip_trademarks_patents_designs_or_knowhow",
         label: "IP, trademarks, patents, designs, or know-how.",
         score: 2,
-        tags: ["brand_valuation_lead"],
         popup:
-          "Formal IP and business know-how can support value if they protect your advantage, differentiate your company, or make your products and services harder to copy.",
+          "Intellectual property can be a significant value driver, especially if it is formally registered, actively used, and difficult for competitors to replicate.",
       },
       {
-        id: "b3_h",
+        id: "operating_systems_processes_or_playbooks",
         label: "Operating systems, processes, or playbooks.",
         score: 1,
         popup:
-          "Systems and processes matter because they make the business less dependent on one person. A company that runs well without constant founder intervention is usually more valuable.",
+          "Well-documented systems and processes reduce key-person dependency and make the business more scalable and transferable.",
       },
       {
-        id: "b3_i",
+        id: "technical_team_or_specialist_knowledge",
         label: "Technical team or specialist knowledge.",
         score: 1,
-        tags: ["software_data_valuation_lead"],
         popup:
-          "Specialist knowledge can be valuable when it helps the company build products, serve customers, solve hard problems, or maintain an advantage competitors cannot easily hire or copy.",
+          "Specialist expertise can be a competitive advantage, but it needs to be captured in systems and processes to be valued as a business asset rather than a personal one.",
       },
       {
-        id: "b3_j",
+        id: "none_of_the_above",
         label: "None of the above.",
         score: 0,
         popup:
-          "That is okay. Your company may still have value, but it may be more directly tied to revenue, profit, assets, or market demand.",
+          "That is useful to know. The remaining questions will help identify whether there are other value signals worth exploring.",
       },
       {
-        id: "b3_k",
+        id: "not_sure_bv3",
         label: "I am not sure.",
         score: 1,
         popup:
-          "No problem. Hidden value is often hard to spot because it feels like just how the business works. The next questions will help clarify whether there is anything worth reviewing.",
+          "That is a common answer. Many business owners only realise what value they have after mapping their assets more carefully.",
       },
     ],
   },
   {
     id: "b4",
-    track: "valuation_uplift",
-    order: 3,
+    track: "business_value",
+    order: 4,
     type: "single_select",
     prompt: "Can you prove these assets with documents, data, contracts, or reports?",
     required: true,
     options: [
       {
-        id: "b4_a",
+        id: "yes_clearly",
         label: "Yes, clearly.",
         score: 3,
         popup:
-          "That is a strong position. If you can prove the value with documents, data, contracts, or reports, it becomes easier to support a stronger valuation conversation.",
+          "Strong evidence is a real advantage. Investors, buyers, and boards are more likely to accept value claims that are supported by documents and data.",
       },
       {
-        id: "b4_b",
+        id: "somewhat",
         label: "Somewhat.",
         score: 2,
         popup:
           "That is a common middle ground. The value may exist, but the evidence may need to be cleaned up before investors, buyers, or shareholders can rely on it.",
       },
       {
-        id: "b4_c",
+        id: "not_really",
         label: "Not really.",
         score: 2,
         popup:
-          "This is where many companies get stuck. The value may be real, but if it cannot be shown clearly, outsiders may ignore it or discount it.",
+          "This is where many businesses lose value in a negotiation. The assets may be real, but without evidence, they are difficult to defend.",
       },
       {
-        id: "b4_d",
+        id: "no_evidence",
         label: "No.",
         score: 1,
         popup:
-          "That does not mean the value is not there. It means the first job may be to identify and organise the evidence before trying to include it in a valuation discussion.",
+          "A lack of documentation is a common gap. It does not mean the value is not there, but it does mean it will be harder to prove in a valuation discussion.",
       },
       {
-        id: "b4_e",
+        id: "not_sure_evidence",
         label: "I am not sure.",
         score: 1,
         popup:
-          "That is fine. A lot of business owners have the documents somewhere, but they are scattered across contracts, dashboards, customer files, financial reports, and internal systems.",
+          "That is worth finding out. Knowing what documentation exists is an important first step before any valuation or investor discussion.",
       },
     ],
   },
   {
     id: "b5",
-    track: "valuation_uplift",
-    order: 4,
+    track: "business_value",
+    order: 5,
     type: "single_select",
     prompt: "Why do you want a stronger valuation?",
     required: true,
     options: [
       {
-        id: "b5_a",
+        id: "fundraising",
         label: "We are raising funds.",
         score: 3,
         tags: ["fundraising_valuation_lead"],
@@ -680,45 +678,45 @@ export const QUESTIONS: Question[] = [
           "Fundraising is one of the clearest reasons to prepare your valuation story. Investors will usually challenge assumptions, so your evidence needs to be ready.",
       },
       {
-        id: "b5_b",
+        id: "selling_the_business",
         label: "We may sell the business.",
         score: 3,
-        tags: ["brand_valuation_lead", "strategic_transaction_lead"],
+        tags: ["strategic_transaction_lead"],
         popup:
-          "If you may sell the business, you do not want buyers to value it too simply. Hidden value should be identified before the buyer controls the valuation narrative.",
+          "Sellers who understand their hidden value are in a stronger negotiating position. Buyers will look for reasons to discount the price.",
       },
       {
-        id: "b5_c",
+        id: "bringing_investors_or_shareholders",
         label: "We are bringing in investors or shareholders.",
         score: 3,
-        tags: ["fundraising_valuation_lead"],
+        tags: ["ownership_risk_lead"],
         popup:
-          "That is an important moment. When new money or new shareholders enter the business, valuation needs to be clear, fair, and supportable.",
+          "New investors and shareholders will form their own view of value. Preparing your hidden value story before they arrive puts you in control of the narrative.",
       },
       {
-        id: "b5_d",
+        id: "succession_or_restructuring",
         label: "We are planning succession or restructuring.",
         score: 2,
         tags: ["ownership_risk_lead"],
         popup:
-          "Succession and restructuring often require a clearer view of business value. This is especially important for family businesses, shareholder changes, or ownership transfers.",
+          "Succession and restructuring often require a credible business valuation. Hidden value can affect how the business is divided or transferred.",
       },
       {
-        id: "b5_e",
+        id: "board_bank_auditor_or_partner_explanation",
         label: "We need to explain our value to the board, bank, auditor, or partners.",
         score: 2,
         popup:
-          "That is a practical reason. When external parties ask questions, a clear valuation story can help reduce confusion and strengthen decision-making.",
+          "Explaining value to stakeholders requires evidence, not just claims. A structured view of your hidden value makes those conversations easier.",
       },
       {
-        id: "b5_f",
+        id: "understand_what_business_is_worth",
         label: "We want to understand what the business is really worth.",
         score: 1,
         popup:
           "That is a good reason to start. Even without a transaction, knowing where your business value comes from can help with strategy, growth, and future planning.",
       },
       {
-        id: "b5_g",
+        id: "just_curious",
         label: "No specific reason. Just curious.",
         score: 0,
         popup:
@@ -728,14 +726,14 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b6",
-    track: "valuation_uplift",
-    order: 5,
+    track: "business_value",
+    order: 6,
     type: "single_select",
     prompt: "When might you need to defend your valuation?",
     required: true,
     options: [
       {
-        id: "b6_a",
+        id: "now",
         label: "Now.",
         score: 3,
         tags: ["strategic_transaction_lead"],
@@ -743,7 +741,7 @@ export const QUESTIONS: Question[] = [
           "This may be urgent. If valuation discussions are already happening, you should avoid entering them without a clear view of what value may be missing.",
       },
       {
-        id: "b6_b",
+        id: "within_3_months_bv",
         label: "Within 3 months.",
         score: 3,
         tags: ["strategic_transaction_lead"],
@@ -751,21 +749,21 @@ export const QUESTIONS: Question[] = [
           "That is a near-term window. It is worth preparing early so you are not trying to build the valuation story while investors, buyers, or shareholders are already asking questions.",
       },
       {
-        id: "b6_c",
+        id: "within_6_months_bv",
         label: "Within 6 months.",
         score: 2,
         popup:
           "That is a good planning timeline. You likely have enough time to identify hidden value, organise evidence, and prepare a stronger valuation position.",
       },
       {
-        id: "b6_d",
+        id: "within_12_months",
         label: "Within 12 months.",
         score: 1,
         popup:
           "That gives you time to prepare properly. The earlier you map your value drivers, the stronger your position may be when the valuation discussion begins.",
       },
       {
-        id: "b6_e",
+        id: "no_clear_timeline_bv",
         label: "No clear timeline yet.",
         score: 0,
         popup:
@@ -775,14 +773,14 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b7",
-    track: "valuation_uplift",
-    order: 6,
+    track: "business_value",
+    order: 7,
     type: "single_select",
-    prompt: "What is your biggest concern about your company's valuation?",
+    prompt: "What is your biggest concern about your company\u2019s valuation?",
     required: true,
     options: [
       {
-        id: "b7_a",
+        id: "investors_may_not_understand_true_value",
         label: "Investors may not understand the true value of the business.",
         score: 3,
         tags: ["fundraising_valuation_lead"],
@@ -790,7 +788,7 @@ export const QUESTIONS: Question[] = [
           "That is a common fundraising issue. Investors need more than a strong story. They need evidence that supports why the business deserves its valuation.",
       },
       {
-        id: "b7_b",
+        id: "buyers_may_value_us_too_cheaply",
         label: "Buyers may value us too cheaply.",
         score: 3,
         tags: ["brand_valuation_lead"],
@@ -798,28 +796,28 @@ export const QUESTIONS: Question[] = [
           "That is a real risk. Buyers often look for reasons to discount a business, so it helps to identify hidden value before the negotiation starts.",
       },
       {
-        id: "b7_c",
+        id: "brand_software_data_ip_or_customer_base_not_reflected",
         label: "Our brand, software, data, IP, or customer base is not reflected properly.",
         score: 3,
         popup:
           "That is exactly where intangible value matters. These assets may not show clearly in the financials, but they can still influence what the business is worth.",
       },
       {
-        id: "b7_d",
+        id: "do_not_know_how_to_prove_business_worth_more",
         label: "We do not know how to prove the business is worth more.",
         score: 2,
         popup:
           "That is often the main gap. The business may be valuable, but the value needs to be organised into evidence that outsiders can understand and accept.",
       },
       {
-        id: "b7_e",
+        id: "valued_only_on_profit_or_revenue",
         label: "We are being valued only on profit or revenue.",
         score: 2,
         popup:
           "That can be frustrating if your business has more going on beneath the surface. A basic multiple may miss the quality, stickiness, systems, or assets behind the numbers.",
       },
       {
-        id: "b7_f",
+        id: "not_concerned",
         label: "We are not concerned. Just exploring.",
         score: 0,
         popup:
@@ -829,8 +827,8 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b_open",
-    track: "valuation_uplift",
-    order: 7,
+    track: "business_value",
+    order: 8,
     type: "open_text",
     prompt: "Anything else worth knowing before we look at this together?",
     helper:
@@ -841,6 +839,6 @@ export const QUESTIONS: Question[] = [
 
 // Max scores per track
 export const MAX_SCORE: Record<Track, number> = {
-  esop: 18,            // 3+3+3+3+3+3
-  valuation_uplift: 24, // 3+3+cap6+3+3+3+3
+  esop: 18,
+  business_value: 24,
 };

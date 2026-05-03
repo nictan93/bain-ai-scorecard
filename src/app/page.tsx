@@ -95,7 +95,8 @@ export default function LandingPage() {
                 </Button>
               </Link>
 
-              <p className="text-sm text-text-tertiary mt-4">
+              {/* Footer note — two lines with a line break */}
+              <p className="text-sm text-text-tertiary mt-4 text-center whitespace-pre-line">
                 {LANDING_COPY.disclaimer}
               </p>
             </div>

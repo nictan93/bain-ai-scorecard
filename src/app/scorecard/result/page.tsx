@@ -7,32 +7,87 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
-import { Bracket } from "@/components/ui/Bracket";
 import { Badge } from "@/components/ui/Badge";
-import { getOutcome } from "@/content/outcomes";
+import { getOutcomeByKey } from "@/content/outcomes";
 import { RESULT_COPY } from "@/content/copy";
-import type { Track, BackendTag } from "@/content/questions";
+import type { Track, BackendTag, ResultKey } from "@/content/questions";
+import type { LeadIntent } from "@/content/outcomes";
 
 interface ResultPayload {
   track: Track;
   score: number;
   maxScore: number;
+  resultKey?: ResultKey;
   tags: BackendTag[];
   answers: Record<string, string | string[]>;
   openText: Record<string, string>;
+  email?: string;
+  referralCode?: string;
 }
 
-const TRACK_LABELS: Record<Track, string> = {
-  esop: "ESOP Valuation",
-  valuation_uplift: "Valuation Uplift",
+const INTENT_BADGE: Record<LeadIntent, "danger" | "warning" | "info" | "default"> = {
+  hot: "danger",
+  warm: "warning",
+  nurture: "info",
+  cold: "default",
 };
 
 const emailSchema = z.object({
-  email: z.string().email("Enter a valid email address."),
+  email: z.string().email("Enter a valid business email address."),
   name: z.string().optional(),
   company: z.string().optional(),
+  newsletterOptIn: z.boolean().optional(),
 });
 type EmailFormValues = z.infer<typeof emailSchema>;
+
+/**
+ * Renders the result headline as a single flowing sentence:
+ *   before [highlight] after
+ * Only the highlight word is in warning orange — no line break.
+ */
+function ResultHeadline({
+  before,
+  highlight,
+  after,
+}: {
+  before: string;
+  highlight: string;
+  after: string;
+}) {
+  return (
+    <h1 className="text-2xl sm:text-3xl font-sans font-bold text-text-primary leading-tight">
+      {before}{" "}
+      <span className="text-state-warning">[{highlight}]</span>
+      {after ? (
+        <>
+          <br />
+          {after}
+        </>
+      ) : null}
+    </h1>
+  );
+}
+
+/**
+ * Renders body text that may contain [10%] or [competitive rates] —
+ * those tokens are replaced with a larger warning-coloured span.
+ */
+function RichBody({ text, className = "text-sm text-text-secondary leading-relaxed" }: { text: string; className?: string }) {
+  const parts = text.split(/(\[10%\]|\[competitive rates\])/g);
+  return (
+    <p className={className}>
+      {parts.map((part, i) =>
+        part === "[10%]" || part === "[competitive rates]" ? (
+          <span key={i} className="text-state-warning font-bold text-base">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </p>
+  );
+}
 
 function ResultContent() {
   const params = useSearchParams();
@@ -45,16 +100,16 @@ function ResultContent() {
       const raw = sessionStorage.getItem("scorecard_result");
       if (raw) setPayload(JSON.parse(raw) as ResultPayload);
     } catch {
-      // sessionStorage unavailable or parse failure — fall back to URL params
+      // sessionStorage unavailable — fall back to URL params
     }
   }, []);
 
-  // Fallback from URL params if sessionStorage is empty (e.g. direct link)
   const track = (payload?.track ?? params.get("track")) as Track | null;
   const score = payload?.score ?? Number(params.get("score") ?? 0);
   const maxScore = payload?.maxScore ?? Number(params.get("max") ?? 0);
+  const resultKey = (payload?.resultKey ?? params.get("resultKey")) as ResultKey | null;
 
-  const outcome = track ? getOutcome(track, score) : null;
+  const outcome = resultKey ? getOutcomeByKey(resultKey) : null;
 
   const {
     register,
@@ -62,6 +117,7 @@ function ResultContent() {
     formState: { errors, isSubmitting },
   } = useForm<EmailFormValues>({
     resolver: zodResolver(emailSchema),
+    defaultValues: { newsletterOptIn: false },
   });
 
   const onSubmit = async (values: EmailFormValues) => {
@@ -75,7 +131,7 @@ function ResultContent() {
         tags: payload?.tags ?? [],
         answers: payload?.answers ?? {},
         openText: payload?.openText ?? {},
-        referralCode: (payload as { referralCode?: string } | null)?.referralCode ?? "",
+        referralCode: payload?.referralCode ?? "",
       };
       const res = await fetch("/api/submit", {
         method: "POST",
@@ -91,7 +147,7 @@ function ResultContent() {
     }
   };
 
-  if (!track || !outcome) {
+  if (!resultKey || !outcome) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="max-w-md text-center space-y-4">
@@ -108,63 +164,85 @@ function ResultContent() {
     );
   }
 
+  const isHot = outcome.leadIntent === "hot";
+  const isWarm = outcome.leadIntent === "warm";
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
-        <img src="/logo.png" alt="Bain Squared" className="h-7 w-auto" />
-        <Link
-          href="/scorecard"
-          className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
-        >
-          {RESULT_COPY.retakeLabel}
-        </Link>
+    <div className="min-h-screen flex flex-col bg-surface-canvas">
+
+      {/* Header */}
+      <header className="px-4 sm:px-6 py-4 border-b border-border-subtle">
+        <div className="max-w-[1320px] mx-auto flex items-center justify-between">
+          <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
+          <Link
+            href="/scorecard"
+            className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
+          >
+            {RESULT_COPY.retakeLabel}
+          </Link>
+        </div>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-8">
-        {/* Result band card */}
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-6">
+
+        {/* ── Result card ───────────────────────────────────────────── */}
         <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
-          <div className="px-8 pt-8 pb-6 space-y-3">
+          <div className="px-8 pt-8 pb-6 space-y-4">
             <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
-              Your result
+              {RESULT_COPY.yourResultLabel}
             </p>
-            <p className="text-sm font-sans text-text-secondary">
-              Track:{" "}
-              <Bracket color="brand" className="text-sm">
-                {TRACK_LABELS[track]}
-              </Bracket>
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-sans font-bold text-text-primary leading-tight">
-              {outcome.label}
-            </h1>
-            <Badge variant="info">{outcome.statusLabel}</Badge>
+
+            {/* Headline — full sentence with highlight word in [brackets] warning colour */}
+            <ResultHeadline
+              before={outcome.headlineBefore}
+              highlight={outcome.headlineHighlight}
+              after={outcome.headlineAfter}
+            />
+
+            {/* Status badge */}
+            <Badge variant={INTENT_BADGE[outcome.leadIntent]}>
+              {outcome.statusLabel}
+            </Badge>
           </div>
+
+          {/* Description — supports [10%] and [competitive rates] tokens */}
           <div className="border-t border-border-subtle px-8 py-6">
-            <p className="text-sm text-text-secondary leading-relaxed">
-              {outcome.description}
-            </p>
+            <RichBody text={outcome.description} className="text-sm text-text-secondary leading-relaxed whitespace-pre-line" />
           </div>
         </div>
 
-        {/* Recommended next step — gated behind email */}
-        <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
-          {!submitted ? (
+        {/* ── Callout card — shown for ALL results ─────────────────── */}
+        <div className="rounded-2xl border border-brand-primary/20 bg-brand-primary-soft px-8 py-6">
+          <p className="text-xs font-sans font-semibold text-brand-primary uppercase tracking-widest mb-2">
+            {outcome.calloutLabel}
+          </p>
+          <RichBody text={outcome.calloutBody} />
+        </div>
+
+        {/* ── CTA card ─────────────────────────────────────────────── */}
+        {!submitted ? (
+          <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
             <div className="p-8 space-y-6">
+
+              {/* Section label + headline + body */}
               <div className="space-y-2">
                 <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
-                  {RESULT_COPY.nextStepLabel}
+                  {outcome.ctaSectionLabel}
                 </p>
                 <h2 className="text-xl font-sans font-bold text-text-primary">
-                  {RESULT_COPY.emailGateHeadline}
+                  {outcome.ctaHeadline}
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
-                  {RESULT_COPY.emailGateBody}
+                  {outcome.ctaBody}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+
+                {/* Email — always required regardless of upfront capture */}
                 <div className="space-y-1">
                   <label htmlFor="email" className="text-xs font-sans text-text-secondary">
-                    Email address *
+                    {RESULT_COPY.emailLabel}
                   </label>
                   <input
                     id="email"
@@ -185,10 +263,12 @@ function ResultContent() {
                   )}
                 </div>
 
+                {/* Name + Company — (optional) beside label */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label htmlFor="name" className="text-xs font-sans text-text-secondary">
-                      Name
+                    <label htmlFor="name" className="text-xs font-sans text-text-secondary flex items-center gap-1">
+                      {RESULT_COPY.namePlaceholder}
+                      <span className="text-text-tertiary">{RESULT_COPY.nameOptional}</span>
                     </label>
                     <input
                       id="name"
@@ -205,8 +285,9 @@ function ResultContent() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="company" className="text-xs font-sans text-text-secondary">
-                      Company
+                    <label htmlFor="company" className="text-xs font-sans text-text-secondary flex items-center gap-1">
+                      {RESULT_COPY.companyPlaceholder}
+                      <span className="text-text-tertiary">{RESULT_COPY.companyOptional}</span>
                     </label>
                     <input
                       id="company"
@@ -224,10 +305,23 @@ function ResultContent() {
                   </div>
                 </div>
 
+                {/* Newsletter opt-in — unchecked by default */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    {...register("newsletterOptIn")}
+                    className="mt-0.5 h-4 w-4 rounded border-border-default text-brand-primary focus:ring-brand-primary"
+                  />
+                  <span className="text-xs text-text-secondary leading-relaxed">
+                    {RESULT_COPY.newsletterCheckboxLabel}
+                  </span>
+                </label>
+
                 {submitError && (
                   <p className="text-xs text-state-danger">{submitError}</p>
                 )}
 
+                {/* Primary CTA */}
                 <Button
                   type="submit"
                   variant="primary"
@@ -235,16 +329,19 @@ function ResultContent() {
                   loading={isSubmitting}
                   className="w-full"
                 >
-                  {isSubmitting ? RESULT_COPY.submittingLabel : RESULT_COPY.submitLabel}
+                  {isSubmitting ? RESULT_COPY.submittingLabel : outcome.primaryCtaLabel}
                 </Button>
 
-                <p className="text-xs text-text-tertiary text-center">
+                {/* Privacy note */}
+                <p className="text-xs text-text-tertiary text-center whitespace-pre-line">
                   {RESULT_COPY.privacyNote}
                 </p>
               </form>
             </div>
-          ) : (
-            /* Post-submit: unlock the CTA */
+          </div>
+        ) : (
+          /* Post-submit state */
+          <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
             <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <Badge variant="success">Sent</Badge>
@@ -255,21 +352,19 @@ function ResultContent() {
                   {RESULT_COPY.successBody}
                 </p>
               </div>
-
-              <div className="space-y-3">
-                <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
-                  {RESULT_COPY.nextStepLabel}
-                </p>
-                <p className="text-sm text-text-secondary">{outcome.recommendedNextStep}</p>
-                <a href={outcome.ctaUrl} target="_blank" rel="noopener noreferrer">
-                  <Button variant="primary" size="md">
-                    {outcome.ctaLabel}
-                  </Button>
-                </a>
-              </div>
+              {(isHot || isWarm) && (
+                <div className="space-y-3">
+                  <a href={outcome.ctaUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="md">
+                      {outcome.secondaryCtaLabel}
+                    </Button>
+                  </a>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
       </main>
 
       <footer className="px-6 py-5 border-t border-border-subtle">

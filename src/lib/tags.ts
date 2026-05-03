@@ -1,45 +1,34 @@
-import { QUESTIONS, type BackendTag, type Track } from "@/content/questions";
+import { QUESTIONS, type Track, type BackendTag } from "@/content/questions";
 
 export function deriveTags(
   track: Track,
   answers: Record<string, string | string[]>
 ): BackendTag[] {
   const tagSet = new Set<BackendTag>();
+  const trackQuestions = QUESTIONS.filter((q) => q.track === track);
 
-  for (const question of QUESTIONS) {
-    if (question.type === "open_text" || !question.options) continue;
-
+  for (const question of trackQuestions) {
+    if (!question.options) continue;
     const answer = answers[question.id];
     if (answer == null) continue;
 
-    if (question.type === "multi_select" && Array.isArray(answer)) {
-      for (const selectedId of answer) {
-        const option = question.options.find((o) => o.id === selectedId);
-        option?.tags?.forEach((t) => tagSet.add(t));
+    const selectedIds = Array.isArray(answer) ? answer : [answer];
+    for (const id of selectedIds) {
+      const option = question.options.find((o) => o.id === id);
+      if (option?.tags) {
+        option.tags.forEach((t) => tagSet.add(t));
       }
-    } else if (typeof answer === "string") {
-      const option = question.options.find((o) => o.id === answer);
-      option?.tags?.forEach((t) => tagSet.add(t));
     }
   }
 
-  const esopTags = new Set<BackendTag>([
-    "esop_hot_lead",
-    "esop_needs_report",
-    "esop_education_lead",
-    "esop_stakeholder_pressure",
-  ]);
-  const upliftTags = new Set<BackendTag>([
-    "fundraising_valuation_lead",
-    "brand_valuation_lead",
-    "software_data_valuation_lead",
-    "ownership_risk_lead",
-  ]);
-  const eitherTags = new Set<BackendTag>(["strategic_transaction_lead"]);
+  // Also pick up tags from the routing question
+  const routingAnswer = answers["q1_routing"];
+  if (typeof routingAnswer === "string") {
+    const routingOption = QUESTIONS.find((q) => q.id === "q1_routing")?.options?.find(
+      (o) => o.id === routingAnswer
+    );
+    routingOption?.tags?.forEach((t) => tagSet.add(t));
+  }
 
-  return Array.from(tagSet).filter((tag) => {
-    if (eitherTags.has(tag)) return true;
-    if (track === "esop") return esopTags.has(tag);
-    return upliftTags.has(tag);
-  });
+  return Array.from(tagSet);
 }

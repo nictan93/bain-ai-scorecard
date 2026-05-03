@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getResultKey, getDeliverableKey } from "@/lib/scoring";
+import { calculateResultKey, getDeliverableKey } from "@/lib/scoring";
 import { OUTCOMES } from "@/content/outcomes";
 import type { Track } from "@/content/questions";
 
@@ -8,7 +8,8 @@ const SubmissionSchema = z.object({
   email: z.string().email(),
   name: z.string().optional(),
   company: z.string().optional(),
-  track: z.enum(["esop", "valuation_uplift"]),
+  track: z.enum(["esop", "business_value"]),
+  newsletterOptIn: z.boolean().optional(),
   score: z.number(),
   maxScore: z.number(),
   tags: z.array(z.string()).optional(),
@@ -22,9 +23,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as unknown;
     const data = SubmissionSchema.parse(body);
 
-    // Derive result key and deliverable server-side — never trust the client
+    // Derive result key server-side from answers — never trust client-supplied resultKey
     const track = data.track as Track;
-    const resultKey = getResultKey(track, data.score);
+    const resultKey = calculateResultKey(track, data.answers ?? {});
     const deliverableKey = getDeliverableKey(resultKey);
     const outcome = OUTCOMES.find((o) => o.id === resultKey);
 
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
       statusLabel: outcome?.statusLabel ?? "",
       tags: data.tags ?? [],
       openText: data.openText ?? {},
+      newsletterOptIn: data.newsletterOptIn ?? false,
       submittedAt: new Date().toISOString(),
     };
 

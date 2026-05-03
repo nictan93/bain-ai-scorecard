@@ -3,12 +3,10 @@ import { QUESTIONS, type Question, type Track } from "@/content/questions";
 export function determineTrack(answers: Record<string, string | string[]>): Track | null {
   const q1Answer = answers["q1_routing"];
   if (!q1Answer || typeof q1Answer !== "string") return null;
-
   const q1Option = QUESTIONS.find((q) => q.id === "q1_routing")?.options?.find(
     (o) => o.id === q1Answer
   );
   if (!q1Option?.routesTo) return null;
-
   return q1Option.routesTo;
 }
 
@@ -32,7 +30,6 @@ export function getNextQuestionId(
     if (!q1Option?.routesTo) return null;
     return trackQuestionsInOrder(q1Option.routesTo)[0]?.id ?? null;
   }
-
   // Within a track: advance to next in order
   if (!track) return null;
   const trackQuestions = trackQuestionsInOrder(track);
@@ -53,7 +50,6 @@ export function getQuestionProgress(
 ): { current: number; total: number } {
   if (questionId === "q1_routing") return { current: 1, total: 1 };
   if (!track) return { current: 0, total: 0 };
-
   const trackQuestions = trackQuestionsInOrder(track);
   const idx = trackQuestions.findIndex((q) => q.id === questionId);
   return {

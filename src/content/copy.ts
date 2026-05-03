@@ -6,7 +6,8 @@ export const LANDING_COPY = {
   subheadline2a: "Take the assessment to find out whether your business has hidden value that may support",
   subheadline2b: "ESOP valuation, fundraising, M&A, or a stronger valuation discussion.",
   ctaLabel: "Start the assessment",
-  disclaimer: "No credit card. No login. Takes under 60 seconds.",
+  // Two-line footer note rendered via whitespace-pre-line
+  disclaimer: "No credit card. No login. Takes under 60 seconds.\nComplete the assessment and receive a surprise reward if eligible.",
   benefits: [
     {
       title: "See what your numbers may not show.",
@@ -26,27 +27,40 @@ export const LANDING_COPY = {
 export const IDLE_COPY = {
   headline: "Let's get started",
   subheadline:
-    "Add your email if you want us to save your result or send you a copy after the assessment. Your email is only used for tracking and requested follow-up. No newsletter or spam list.",
+    "Add your business email if you want us to save your result or send you a copy after the assessment. Your email is only used for tracking referrals and requested follow-up. No marketing newsletter spam.",
   ctaLabel: "Start the assessment",
   disclaimer: "No credit card. No login. Takes under 60 seconds.",
+  referralPlaceholder: "e.g. ABC2026",
 } as const;
 
 export const RESULT_COPY = {
-  scoreLabel: "Your readiness score",
-  diagnosisLabel: "Diagnosis",
-  nextStepLabel: "Recommended next step",
-  emailGateHeadline: "Get your full readiness report.",
-  emailGateBody:
-    "Enter your details to unlock the specific next step and book a scoping call. We will also send you a copy of your result.",
-  emailPlaceholder: "your@email.com",
-  namePlaceholder: "Name (optional)",
-  companyPlaceholder: "Company (optional)",
-  submitLabel: "Unlock next step",
+  yourResultLabel: "YOUR RESULT",
+
+  // Email field
+  emailLabel: "Business email *",
+  emailPlaceholder: "your@company.com",
+
+  // Name / Company labels
+  namePlaceholder: "Name",
+  nameOptional: "(optional)",
+  companyPlaceholder: "Company",
+  companyOptional: "(optional)",
+
+  // Newsletter checkbox — updated label
+  newsletterCheckboxLabel: "I would like to receive newsletters from Bain Squared.",
+
+  // Submit states
   submittingLabel: "Sending...",
+
+  // Privacy note — shown below the submit button
+  // Replaces the old "We use your email..." text
+  privacyNote:
+    "Your email is only used for tracking referrals and requested follow-up.\nNo marketing newsletter spam.",
+
+  // Post-submit
   successHeadline: "You are in.",
   successBody:
-    "Your result and the relevant checklist will arrive in your inbox shortly. If you would like to discuss your situation, book a call below.",
-  privacyNote:
-    "Your details are used only to send your result and route it to the right person at Bain Squared. No marketing lists.",
+    "Your result and the relevant checklist will arrive in your inbox shortly.",
+
   retakeLabel: "Retake the assessment",
 } as const;

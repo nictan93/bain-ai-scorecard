@@ -14,7 +14,7 @@ import {
   isLastQuestion,
   getQuestionProgress,
 } from "@/lib/routing";
-import { calculateScore, getMaxScore } from "@/lib/scoring";
+import { calculateScore, getMaxScore, calculateResultKey } from "@/lib/scoring";
 import { deriveTags } from "@/lib/tags";
 import type { Track } from "@/content/questions";
 
@@ -175,12 +175,14 @@ export default function ScorecardPage() {
 
       const score = calculateScore(track, state.answers);
       const maxScore = getMaxScore(track);
+      const resultKey = calculateResultKey(track, state.answers);
       const tags = deriveTags(track, state.answers);
 
       const resultPayload = {
         track,
         score,
         maxScore,
+        resultKey,
         tags,
         answers: state.answers,
         openText: state.openText,
@@ -189,7 +191,7 @@ export default function ScorecardPage() {
       };
 
       sessionStorage.setItem("scorecard_result", JSON.stringify(resultPayload));
-      router.push(`/scorecard/result?track=${track}&score=${score}&max=${maxScore}`);
+      router.push(`/scorecard/result?track=${track}&resultKey=${resultKey}&score=${score}&max=${maxScore}`);
       return;
     }
 
@@ -257,16 +259,6 @@ export default function ScorecardPage() {
         <header className="px-4 sm:px-6 py-4">
           <div className="max-w-[1320px] mx-auto flex items-center justify-between">
             <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
-            <nav className="flex items-center gap-2">
-              <a
-                href="https://cal.com/bain-squared/ia-valuation"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
-              >
-                Book a call
-              </a>
-            </nav>
           </div>
         </header>
 
@@ -335,7 +327,7 @@ export default function ScorecardPage() {
                         setIdleReferral(e.target.value);
                         setReferralError(null);
                       }}
-                      placeholder="e.g. PARTNER2024"
+                      placeholder={IDLE_COPY.referralPlaceholder}
                       className={[
                         "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
                         "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
@@ -371,13 +363,16 @@ export default function ScorecardPage() {
   // ── In progress ──────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-surface-canvas">
-      <header className="px-6 py-5 border-b border-border-subtle">
-        <div className="max-w-2xl mx-auto w-full">
-          <ProgressHeader
-            current={progress.current}
-            total={totalForProgress}
-            track={state.track}
-          />
+      <header className="px-4 sm:px-6 py-4 border-b border-border-subtle">
+        <div className="max-w-[1320px] mx-auto flex items-center gap-6">
+          <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto shrink-0" />
+          <div className="flex-1">
+            <ProgressHeader
+              current={progress.current}
+              total={totalForProgress}
+              track={state.track}
+            />
+          </div>
         </div>
       </header>
 

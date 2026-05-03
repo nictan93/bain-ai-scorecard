@@ -9,7 +9,7 @@ interface ProgressHeaderProps {
 
 const TRACK_LABELS: Record<Track, string> = {
   esop: "ESOP Valuation",
-  valuation_uplift: "Valuation Uplift",
+  business_value: "Business Value",
 };
 
 export function ProgressHeader({ current, total, track }: ProgressHeaderProps) {
