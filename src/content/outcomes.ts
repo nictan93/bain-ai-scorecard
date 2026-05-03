@@ -11,9 +11,8 @@ export interface Outcome {
   ctaUrl: string;
 }
 
-// Calendly placeholder — replace before launch
-const ESOP_BOOKING_URL = "https://calendly.com/bainsquared/ia-valuation";
-const BIP_BOOKING_URL = "https://calendly.com/bainsquared/ia-valuation";
+const ESOP_BOOKING_URL = "https://cal.com/bain-squared/ia-valuation";
+const BIP_BOOKING_URL = "https://cal.com/bain-squared/ia-valuation";
 
 export const OUTCOMES: Outcome[] = [
   // ── ESOP (max score 18) ───────────────────────────────────────────────

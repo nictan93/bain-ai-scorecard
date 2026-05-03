@@ -114,13 +114,23 @@ function ResultContent() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
-        <span className="text-sm font-sans font-bold text-text-primary">Bain Squared</span>
-        <Link
-          href="/scorecard"
-          className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
-        >
-          {RESULT_COPY.retakeLabel}
-        </Link>
+        <img src="/logo.png" alt="Bain Squared" className="h-7 w-auto" />
+        <div className="flex items-center gap-4">
+          <a
+            href="https://cal.com/bain-squared/ia-valuation"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
+          >
+            Book a call
+          </a>
+          <Link
+            href="/scorecard"
+            className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
+          >
+            {RESULT_COPY.retakeLabel}
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-12">
@@ -186,7 +196,7 @@ function ResultContent() {
                     {...register("email")}
                     className={[
                       "w-full rounded-xl border bg-surface-canvas px-4 py-3",
-                      "text-base text-text-primary placeholder:text-text-tertiary",
+                      "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
                       "focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2",
                       "transition-colors duration-[180ms]",
                       errors.email ? "border-state-danger" : "border-border-default",
@@ -210,7 +220,7 @@ function ResultContent() {
                       {...register("name")}
                       className={[
                         "w-full rounded-xl border border-border-default bg-surface-canvas px-4 py-3",
-                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
                         "focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2",
                         "transition-colors duration-[180ms]",
                       ].join(" ")}
@@ -228,7 +238,7 @@ function ResultContent() {
                       {...register("company")}
                       className={[
                         "w-full rounded-xl border border-border-default bg-surface-canvas px-4 py-3",
-                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
                         "focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2",
                         "transition-colors duration-[180ms]",
                       ].join(" ")}
@@ -285,8 +295,8 @@ function ResultContent() {
       </main>
 
       <footer className="px-6 py-5 border-t border-border-subtle">
-        <p className="text-xs font-sans text-text-tertiary">
-          Bain Squared — Intangible Asset Valuation
+        <p className="text-xs font-sans text-text-tertiary text-center">
+          © 2026 Bain Squared | All rights reserved.
         </p>
       </footer>
     </div>

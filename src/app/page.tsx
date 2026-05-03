@@ -40,7 +40,9 @@ export default function LandingPage() {
         <span className="opacity-80">{LANDING_COPY.announcementBar}</span>
         {" "}
         <a
-          href="https://bainsquared.com"
+          href="https://cal.com/bain-squared/ia-valuation"
+          target="_blank"
+          rel="noopener noreferrer"
           className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-[180ms]"
         >
           {LANDING_COPY.announcementCta}
@@ -50,21 +52,15 @@ export default function LandingPage() {
       {/* Header — aligned to hero card width */}
       <header className="px-4 sm:px-6 py-4">
         <div className="max-w-[1320px] mx-auto flex items-center justify-between">
-          <span className="text-base font-sans font-extrabold text-text-primary tracking-tight">
-            Bain Squared
-          </span>
+          <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
           <nav className="flex items-center gap-2">
             <a
-              href="https://bainsquared.com"
-              className="px-4 py-2 text-sm font-medium text-text-primary rounded-full hover:bg-surface-card-soft transition-colors duration-[180ms]"
-            >
-              About
-            </a>
-            <a
-              href="https://bainsquared.com"
+              href="https://cal.com/bain-squared/ia-valuation"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
             >
-              Talk to us
+              Book a call
             </a>
           </nav>
         </div>
@@ -74,7 +70,7 @@ export default function LandingPage() {
 
         {/* Hero card wrapper */}
         <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
-          <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[480px]">
+          <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[560px]">
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
               Your business could be{" "}
@@ -132,7 +128,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="px-6 py-8">
         <p className="text-xs font-sans text-text-tertiary text-center">
-          © Bain Squared
+          © 2026 Bain Squared | All rights reserved.
         </p>
       </footer>
 

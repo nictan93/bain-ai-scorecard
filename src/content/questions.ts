@@ -412,7 +412,7 @@ export const QUESTIONS: Question[] = [
     prompt: "Anything else worth knowing before we look at this together?",
     helper:
       "Tell us about any specific constraints, timeline pressures, or context not captured above. There is no right or wrong answer here.",
-    required: true,
+    required: false,
   },
 
   // ── Track B: Valuation Uplift ────────────────────────────────────────
@@ -817,7 +817,7 @@ export const QUESTIONS: Question[] = [
     prompt: "Anything else worth knowing before we look at this together?",
     helper:
       "Tell us about any deal terms, ownership structure, timeline pressure, or context not covered above. There is no right or wrong answer here.",
-    required: true,
+    required: false,
   },
 ];
 

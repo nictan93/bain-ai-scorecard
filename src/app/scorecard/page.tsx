@@ -86,7 +86,7 @@ export default function ScorecardPage() {
   const canAdvance =
     currentQuestion !== null &&
     (currentQuestion.type === "open_text"
-      ? (state.openText[currentQuestion.id] ?? "").trim().length > 0
+      ? true
       : currentQuestion.type === "multi_select"
       ? ((state.answers[currentQuestion.id] as string[] | undefined) ?? []).length > 0
       : Boolean(state.answers[currentQuestion.id]));
@@ -244,7 +244,9 @@ export default function ScorecardPage() {
           <span className="opacity-80">{LANDING_COPY.announcementBar}</span>
           {" "}
           <a
-            href="https://bainsquared.com"
+            href="https://cal.com/bain-squared/ia-valuation"
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-[180ms]"
           >
             {LANDING_COPY.announcementCta}
@@ -254,21 +256,15 @@ export default function ScorecardPage() {
         {/* Header */}
         <header className="px-4 sm:px-6 py-4">
           <div className="max-w-[1320px] mx-auto flex items-center justify-between">
-            <span className="text-base font-sans font-extrabold text-text-primary tracking-tight">
-              Bain Squared
-            </span>
+            <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
             <nav className="flex items-center gap-2">
               <a
-                href="https://bainsquared.com"
-                className="px-4 py-2 text-sm font-medium text-text-primary rounded-full hover:bg-surface-card-soft transition-colors duration-[180ms]"
-              >
-                About
-              </a>
-              <a
-                href="https://bainsquared.com"
+                href="https://cal.com/bain-squared/ia-valuation"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
               >
-                Talk to us
+                Book a call
               </a>
             </nav>
           </div>
@@ -276,7 +272,7 @@ export default function ScorecardPage() {
 
         <main className="flex-1 flex flex-col px-4 sm:px-6 pb-6">
           <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
-            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[480px]">
+            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[560px]">
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
                 {IDLE_COPY.headline}
@@ -289,10 +285,10 @@ export default function ScorecardPage() {
               <div className="mt-auto w-full flex flex-col items-start sm:items-center">
                 <form
                   onSubmit={handleIdleSubmit}
-                  className="w-full max-w-sm space-y-10"
+                  className="w-full max-w-sm space-y-4"
                   noValidate
                 >
-                  <div className="space-y-3 text-left">
+                  <div className="space-y-2 text-left">
                     <label
                       htmlFor="idle_email"
                       className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
@@ -312,7 +308,7 @@ export default function ScorecardPage() {
                       autoComplete="email"
                       className={[
                         "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
                         "focus:outline-none focus:border-brand-primary",
                         "transition-colors duration-[180ms]",
                         emailError ? "border-state-danger" : "border-border-default",
@@ -323,7 +319,7 @@ export default function ScorecardPage() {
                     )}
                   </div>
 
-                  <div className="space-y-3 text-left">
+                  <div className="space-y-2 text-left">
                     <label
                       htmlFor="idle_referral"
                       className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
@@ -342,7 +338,7 @@ export default function ScorecardPage() {
                       placeholder="e.g. PARTNER2024"
                       className={[
                         "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                        "text-base text-text-primary placeholder:text-text-tertiary",
+                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
                         "focus:outline-none focus:border-brand-primary",
                         "transition-colors duration-[180ms]",
                         referralError ? "border-state-danger" : "border-border-default",
@@ -353,7 +349,7 @@ export default function ScorecardPage() {
                     )}
                   </div>
 
-                  <div className="flex justify-start sm:justify-center">
+                  <div className="pt-2 flex justify-start sm:justify-center">
                     <Button type="submit" variant="primary" size="lg">
                       {IDLE_COPY.ctaLabel}
                     </Button>
