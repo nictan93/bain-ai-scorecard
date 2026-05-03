@@ -45,7 +45,7 @@ export const RESULT_COPY = {
   submittingLabel: "Sending...",
   successHeadline: "You are in.",
   successBody:
-    "Check your inbox for a copy of your result. The booking link below is scoped to your situation.",
+    "Your result and the relevant checklist will arrive in your inbox shortly. If you would like to discuss your situation, book a call below.",
   privacyNote:
     "Your details are used only to send your result and route it to the right person at Bain Squared. No marketing lists.",
   retakeLabel: "Retake the assessment",

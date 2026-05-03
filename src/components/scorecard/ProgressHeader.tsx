@@ -8,8 +8,8 @@ interface ProgressHeaderProps {
 }
 
 const TRACK_LABELS: Record<Track, string> = {
-  esop: "ESOP",
-  brand_ip: "Brand & IP",
+  esop: "ESOP Valuation",
+  valuation_uplift: "Valuation Uplift",
 };
 
 export function ProgressHeader({ current, total, track }: ProgressHeaderProps) {

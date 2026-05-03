@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getResultKey, getDeliverableKey } from "@/lib/scoring";
+import { OUTCOMES } from "@/content/outcomes";
+import type { Track } from "@/content/questions";
 
 const SubmissionSchema = z.object({
   email: z.string().email(),
   name: z.string().optional(),
   company: z.string().optional(),
-  track: z.enum(["esop", "brand_ip"]),
+  track: z.enum(["esop", "valuation_uplift"]),
   score: z.number(),
   maxScore: z.number(),
-  outcomeTitle: z.string().optional(),
-  outcomeRangeLow: z.number().optional(),
-  outcomeRangeHigh: z.number().optional(),
   tags: z.array(z.string()).optional(),
-  answers: z.record(z.string(), z.string()).optional(),
+  answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
   openText: z.record(z.string(), z.string()).optional(),
+  referralCode: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -21,15 +22,54 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as unknown;
     const data = SubmissionSchema.parse(body);
 
-    // Phase 5: wire Vercel Postgres and Resend here.
+    // Derive result key and deliverable server-side — never trust the client
+    const track = data.track as Track;
+    const resultKey = getResultKey(track, data.score);
+    const deliverableKey = getDeliverableKey(resultKey);
+    const outcome = OUTCOMES.find((o) => o.id === resultKey);
+
+    const webhookPayload = {
+      email: data.email,
+      name: data.name ?? "",
+      company: data.company ?? "",
+      referralCode: data.referralCode ?? "",
+      track,
+      score: data.score,
+      maxScore: data.maxScore,
+      resultKey,
+      deliverableKey,
+      outcomeLabel: outcome?.label ?? "",
+      statusLabel: outcome?.statusLabel ?? "",
+      tags: data.tags ?? [],
+      openText: data.openText ?? {},
+      submittedAt: new Date().toISOString(),
+    };
+
+    // Fire Zapier webhook (non-blocking best-effort)
+    const zapierUrl = process.env.ZAPIER_WEBHOOK_URL;
+    if (zapierUrl) {
+      try {
+        await fetch(zapierUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(webhookPayload),
+        });
+      } catch (webhookErr) {
+        // Log but don't fail the user-facing response
+        console.error("[scorecard] zapier webhook error", webhookErr);
+      }
+    }
+
     console.log("[scorecard] submission received", {
       email: data.email,
-      track: data.track,
+      track,
       score: data.score,
+      resultKey,
+      deliverableKey,
       tags: data.tags,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, resultKey, deliverableKey });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

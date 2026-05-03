@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ScoreCard } from "@/components/ui/ScoreCard";
 import { Button } from "@/components/ui/Button";
 import { Bracket } from "@/components/ui/Bracket";
 import { Badge } from "@/components/ui/Badge";
@@ -24,8 +23,8 @@ interface ResultPayload {
 }
 
 const TRACK_LABELS: Record<Track, string> = {
-  esop: "ESOP",
-  brand_ip: "Brand & IP",
+  esop: "ESOP Valuation",
+  valuation_uplift: "Valuation Uplift",
 };
 
 const emailSchema = z.object({
@@ -73,12 +72,10 @@ function ResultContent() {
         track,
         score,
         maxScore,
-        outcomeTitle: outcome?.label,
-        outcomeRangeLow: outcome?.scoreRange[0],
-        outcomeRangeHigh: outcome?.scoreRange[1],
         tags: payload?.tags ?? [],
         answers: payload?.answers ?? {},
         openText: payload?.openText ?? {},
+        referralCode: (payload as { referralCode?: string } | null)?.referralCode ?? "",
       };
       const res = await fetch("/api/submit", {
         method: "POST",
@@ -115,55 +112,36 @@ function ResultContent() {
     <div className="min-h-screen flex flex-col">
       <header className="px-6 py-5 border-b border-border-subtle flex items-center justify-between">
         <img src="/logo.png" alt="Bain Squared" className="h-7 w-auto" />
-        <div className="flex items-center gap-4">
-          <a
-            href="https://cal.com/bain-squared/ia-valuation"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
-          >
-            Book a call
-          </a>
-          <Link
-            href="/scorecard"
-            className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
-          >
-            {RESULT_COPY.retakeLabel}
-          </Link>
-        </div>
+        <Link
+          href="/scorecard"
+          className="text-xs font-sans text-text-tertiary hover:text-text-primary transition-colors duration-[180ms]"
+        >
+          {RESULT_COPY.retakeLabel}
+        </Link>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-12">
-        {/* Track label */}
-        <div className="space-y-1">
-          <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
-            {RESULT_COPY.scoreLabel}
-          </p>
-          <p className="text-sm font-sans text-text-secondary">
-            Track:{" "}
-            <Bracket color="brand" className="text-sm">
-              {TRACK_LABELS[track]}
-            </Bracket>
-          </p>
-        </div>
-
-        {/* Score card */}
-        <ScoreCard
-          score={score}
-          maxScore={maxScore}
-          label={outcome.label}
-          description={outcome.description}
-        />
-
-        {/* Diagnosis */}
-        <div className="space-y-3">
-          <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
-            {RESULT_COPY.diagnosisLabel}
-          </p>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Bracket color="brand" className="text-2xl font-bold">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-8">
+        {/* Result band card */}
+        <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
+          <div className="px-8 pt-8 pb-6 space-y-3">
+            <p className="text-xs font-sans text-text-tertiary uppercase tracking-widest">
+              Your result
+            </p>
+            <p className="text-sm font-sans text-text-secondary">
+              Track:{" "}
+              <Bracket color="brand" className="text-sm">
+                {TRACK_LABELS[track]}
+              </Bracket>
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-sans font-bold text-text-primary leading-tight">
               {outcome.label}
-            </Bracket>
+            </h1>
+            <Badge variant="info">{outcome.statusLabel}</Badge>
+          </div>
+          <div className="border-t border-border-subtle px-8 py-6">
+            <p className="text-sm text-text-secondary leading-relaxed">
+              {outcome.description}
+            </p>
           </div>
         </div>
 

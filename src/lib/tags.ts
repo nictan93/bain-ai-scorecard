@@ -29,7 +29,7 @@ export function deriveTags(
     "esop_education_lead",
     "esop_stakeholder_pressure",
   ]);
-  const bipTags = new Set<BackendTag>([
+  const upliftTags = new Set<BackendTag>([
     "fundraising_valuation_lead",
     "brand_valuation_lead",
     "software_data_valuation_lead",
@@ -40,6 +40,6 @@ export function deriveTags(
   return Array.from(tagSet).filter((tag) => {
     if (eitherTags.has(tag)) return true;
     if (track === "esop") return esopTags.has(tag);
-    return bipTags.has(tag);
+    return upliftTags.has(tag);
   });
 }

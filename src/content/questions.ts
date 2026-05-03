@@ -1,4 +1,20 @@
-export type Track = "esop" | "brand_ip";
+export type Track = "esop" | "valuation_uplift";
+
+export type ResultKey =
+  | "esop_low"
+  | "esop_moderate"
+  | "esop_high"
+  | "esop_urgent"
+  | "uplift_low"
+  | "uplift_moderate"
+  | "uplift_high"
+  | "uplift_immediate";
+
+export type DeliverableKey =
+  | "esop_startup_checklist"
+  | "esop_document_checklist"
+  | "hidden_value_checklist"
+  | "investor_evidence_checklist";
 
 export type BackendTag =
   | "esop_hot_lead"
@@ -29,6 +45,7 @@ export interface Question {
   helper?: string;
   options?: Option[];
   required: boolean;
+  cap?: number;
 }
 
 export const QUESTIONS: Question[] = [
@@ -58,7 +75,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "q1_c",
         label: "I am raising funds and want a stronger valuation.",
-        routesTo: "brand_ip",
+        routesTo: "valuation_uplift",
         tags: ["fundraising_valuation_lead"],
         popup:
           "That makes sense. Investors usually look for evidence, not just ambition. This assessment will help identify whether your business has hidden value that could support a stronger valuation conversation.",
@@ -66,7 +83,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "q1_d",
         label: "I may sell, restructure, or bring in investors.",
-        routesTo: "brand_ip",
+        routesTo: "valuation_uplift",
         tags: ["strategic_transaction_lead"],
         popup:
           "This is exactly when valuation matters. Before buyers, shareholders, or investors set the price, it helps to understand what value may not be obvious from your financials alone.",
@@ -74,14 +91,14 @@ export const QUESTIONS: Question[] = [
       {
         id: "q1_e",
         label: "I think my business is worth more than a basic profit multiple.",
-        routesTo: "brand_ip",
+        routesTo: "valuation_uplift",
         popup:
           "You may be right. Many businesses are valued too simply based on profit or revenue multiples, even when they have brand, customers, contracts, software, data, or systems that create additional value.",
       },
       {
         id: "q1_f",
         label: "I am not sure. I just want to check if there is hidden value.",
-        routesTo: "brand_ip",
+        routesTo: "valuation_uplift",
         popup:
           "That is a good place to start. Many business owners do not realise what counts as hidden value until they map it out clearly.",
       },
@@ -108,7 +125,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "a1_b",
         label: "Not yet, but we plan to issue them soon.",
-        score: 2,
+        score: 3,
         popup:
           "That is a smart move to consider early. ESOPs can help you incentivise your team, but it is better to understand the valuation requirements before issuing options.",
       },
@@ -418,7 +435,7 @@ export const QUESTIONS: Question[] = [
   // ── Track B: Valuation Uplift ────────────────────────────────────────
   {
     id: "b1",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 0,
     type: "single_select",
     prompt: "How is your company usually valued today?",
@@ -470,7 +487,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b2",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 1,
     type: "single_select",
     prompt: "Do you feel this valuation method misses important parts of your business?",
@@ -508,12 +525,13 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b3",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 2,
     type: "multi_select",
     prompt: "What do you think your current valuation does not fully capture?",
     helper: "Select all that apply.",
     required: true,
+    cap: 6,
     options: [
       {
         id: "b3_a",
@@ -534,21 +552,21 @@ export const QUESTIONS: Question[] = [
       {
         id: "b3_c",
         label: "Repeat customers or recurring revenue.",
-        score: 1,
+        score: 2,
         popup:
           "This is a strong value signal. Repeat and recurring revenue can make a business more predictable, which may support a stronger valuation conversation.",
       },
       {
         id: "b3_d",
         label: "Long-term contracts.",
-        score: 1,
+        score: 2,
         popup:
           "Long-term contracts can reduce uncertainty. If your future revenue is already partly locked in, that can make your business more attractive to investors or buyers.",
       },
       {
         id: "b3_e",
         label: "Software, platform, app, or internal technology.",
-        score: 1,
+        score: 2,
         tags: ["software_data_valuation_lead"],
         popup:
           "Technology can create value if it improves efficiency, supports customers, creates data, reduces manual work, or gives the business an advantage competitors do not have.",
@@ -564,7 +582,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "b3_g",
         label: "IP, trademarks, patents, designs, or know-how.",
-        score: 1,
+        score: 2,
         tags: ["brand_valuation_lead"],
         popup:
           "Formal IP and business know-how can support value if they protect your advantage, differentiate your company, or make your products and services harder to copy.",
@@ -594,7 +612,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "b3_k",
         label: "I am not sure.",
-        score: 0,
+        score: 1,
         popup:
           "No problem. Hidden value is often hard to spot because it feels like just how the business works. The next questions will help clarify whether there is anything worth reviewing.",
       },
@@ -602,7 +620,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b4",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 3,
     type: "single_select",
     prompt: "Can you prove these assets with documents, data, contracts, or reports?",
@@ -611,7 +629,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "b4_a",
         label: "Yes, clearly.",
-        score: 1,
+        score: 3,
         popup:
           "That is a strong position. If you can prove the value with documents, data, contracts, or reports, it becomes easier to support a stronger valuation conversation.",
       },
@@ -625,21 +643,21 @@ export const QUESTIONS: Question[] = [
       {
         id: "b4_c",
         label: "Not really.",
-        score: 3,
+        score: 2,
         popup:
           "This is where many companies get stuck. The value may be real, but if it cannot be shown clearly, outsiders may ignore it or discount it.",
       },
       {
         id: "b4_d",
         label: "No.",
-        score: 3,
+        score: 1,
         popup:
           "That does not mean the value is not there. It means the first job may be to identify and organise the evidence before trying to include it in a valuation discussion.",
       },
       {
         id: "b4_e",
         label: "I am not sure.",
-        score: 2,
+        score: 1,
         popup:
           "That is fine. A lot of business owners have the documents somewhere, but they are scattered across contracts, dashboards, customer files, financial reports, and internal systems.",
       },
@@ -647,7 +665,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b5",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 4,
     type: "single_select",
     prompt: "Why do you want a stronger valuation?",
@@ -710,7 +728,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b6",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 5,
     type: "single_select",
     prompt: "When might you need to defend your valuation?",
@@ -757,7 +775,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b7",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 6,
     type: "single_select",
     prompt: "What is your biggest concern about your company's valuation?",
@@ -803,7 +821,7 @@ export const QUESTIONS: Question[] = [
       {
         id: "b7_f",
         label: "We are not concerned. Just exploring.",
-        score: 1,
+        score: 0,
         popup:
           "That is a useful starting point. Even if there is no immediate concern, this can help you understand where business value may sit outside the usual numbers.",
       },
@@ -811,7 +829,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "b_open",
-    track: "brand_ip",
+    track: "valuation_uplift",
     order: 7,
     type: "open_text",
     prompt: "Anything else worth knowing before we look at this together?",
@@ -823,6 +841,6 @@ export const QUESTIONS: Question[] = [
 
 // Max scores per track
 export const MAX_SCORE: Record<Track, number> = {
-  esop: 18,    // 3+3+3+3+3+3
-  brand_ip: 20, // 2+3+3+3+3+3+3
+  esop: 18,            // 3+3+3+3+3+3
+  valuation_uplift: 24, // 3+3+cap6+3+3+3+3
 };
