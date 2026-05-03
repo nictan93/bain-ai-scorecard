@@ -140,6 +140,11 @@ function ResultContent() {
       });
       if (!res.ok) throw new Error("Submission failed");
       setSubmitted(true);
+      // For hot/warm results: data is captured — now open the booking calendar.
+      // The user may not schedule; the saved email allows follow-up.
+      if ((isHot || isWarm) && outcome) {
+        window.open(outcome.ctaUrl, "_blank", "noopener,noreferrer");
+      }
     } catch {
       setSubmitError(
         "Something went wrong. Please email us directly at scorecard@bainsquared.com."
@@ -339,28 +344,38 @@ function ResultContent() {
               </form>
             </div>
           </div>
-        ) : (
-          /* Post-submit state */
+        ) : (isHot || isWarm) ? (
+          /* Post-submit: hot/warm — cal.com opened, show fallback */
           <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
-            <div className="p-8 space-y-6">
-              <div className="space-y-2">
-                <Badge variant="success">Sent</Badge>
-                <h2 className="text-xl font-sans font-bold text-text-primary">
-                  {RESULT_COPY.successHeadline}
-                </h2>
-                <p className="text-sm text-text-secondary leading-relaxed">
-                  {RESULT_COPY.successBody}
-                </p>
-              </div>
-              {(isHot || isWarm) && (
-                <div className="space-y-3">
-                  <a href={outcome.ctaUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="md">
-                      {outcome.secondaryCtaLabel}
-                    </Button>
-                  </a>
-                </div>
-              )}
+            <div className="p-8 space-y-4">
+              <Badge variant="success">Details saved</Badge>
+              <h2 className="text-xl font-sans font-bold text-text-primary">
+                {RESULT_COPY.calOpenedHeadline}
+              </h2>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                {RESULT_COPY.calOpenedBody}
+              </p>
+              <a
+                href={outcome.ctaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-sm font-medium text-brand-primary underline underline-offset-2 hover:opacity-70 transition-opacity duration-[180ms]"
+              >
+                {RESULT_COPY.calFallbackLabel}
+              </a>
+            </div>
+          </div>
+        ) : (
+          /* Post-submit: cold/nurture — checklist confirmation */
+          <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
+            <div className="p-8 space-y-4">
+              <Badge variant="success">Sent</Badge>
+              <h2 className="text-xl font-sans font-bold text-text-primary">
+                {RESULT_COPY.successHeadline}
+              </h2>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                {RESULT_COPY.successBody}
+              </p>
             </div>
           </div>
         )}

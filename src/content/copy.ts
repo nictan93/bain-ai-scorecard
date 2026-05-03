@@ -57,10 +57,16 @@ export const RESULT_COPY = {
   privacyNote:
     "Your email is only used for tracking referrals and requested follow-up.\nNo marketing newsletter spam.",
 
-  // Post-submit
+  // Post-submit: cold/nurture (checklist sent)
   successHeadline: "You are in.",
   successBody:
     "Your result and the relevant checklist will arrive in your inbox shortly.",
+
+  // Post-submit: hot/warm (cal.com opened)
+  calOpenedHeadline: "Your details are saved.",
+  calOpenedBody:
+    "The booking calendar should be open in a new tab. Pick a time that works for you.",
+  calFallbackLabel: "Open booking calendar →",
 
   retakeLabel: "Retake the assessment",
 } as const;

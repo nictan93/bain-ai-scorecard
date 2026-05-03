@@ -35,34 +35,10 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-surface-canvas">
 
-      {/* Announcement bar */}
-      <div className="bg-surface-accent text-text-inverse text-sm font-sans font-medium py-2.5 px-6 text-center">
-        <span className="opacity-80">{LANDING_COPY.announcementBar}</span>
-        {" "}
-        <a
-          href="https://cal.com/bain-squared/ia-valuation"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-[180ms]"
-        >
-          {LANDING_COPY.announcementCta}
-        </a>
-      </div>
-
       {/* Header — aligned to hero card width */}
       <header className="px-4 sm:px-6 py-4">
         <div className="max-w-[1320px] mx-auto flex items-center justify-between">
           <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
-          <nav className="flex items-center gap-2">
-            <a
-              href="https://cal.com/bain-squared/ia-valuation"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 text-sm font-medium bg-brand-primary text-text-inverse rounded-full hover:bg-brand-primary-pressed transition-colors duration-[180ms]"
-            >
-              Book a call
-            </a>
-          </nav>
         </div>
       </header>
 

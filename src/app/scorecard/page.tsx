@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { ProgressHeader } from "@/components/scorecard/ProgressHeader";
 import { Question } from "@/components/scorecard/Question";
 import { QUESTIONS } from "@/content/questions";
-import { LANDING_COPY, IDLE_COPY } from "@/content/copy";
+import { IDLE_COPY } from "@/content/copy";
 import {
   determineTrack,
   getNextQuestionId,
@@ -240,20 +240,6 @@ export default function ScorecardPage() {
   if (state.step === "idle") {
     return (
       <div className="min-h-screen flex flex-col bg-surface-canvas">
-
-        {/* Announcement bar */}
-        <div className="bg-surface-accent text-text-inverse text-sm font-sans font-medium py-2.5 px-6 text-center">
-          <span className="opacity-80">{LANDING_COPY.announcementBar}</span>
-          {" "}
-          <a
-            href="https://cal.com/bain-squared/ia-valuation"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:opacity-80 transition-opacity duration-[180ms]"
-          >
-            {LANDING_COPY.announcementCta}
-          </a>
-        </div>
 
         {/* Header */}
         <header className="px-4 sm:px-6 py-4">
