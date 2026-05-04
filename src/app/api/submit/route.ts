@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     // Derive result key server-side from answers — never trust client-supplied resultKey
     const track = data.track as Track;
     const resultKey = calculateResultKey(track, data.answers ?? {});
-    const deliverableKey = getDeliverableKey(resultKey);
+    const deliverableKey = getDeliverableKey(resultKey, data.answers ?? {});
     const outcome = OUTCOMES.find((o) => o.id === resultKey);
 
     const webhookPayload = {

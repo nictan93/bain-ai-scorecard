@@ -25,10 +25,9 @@ interface ResultPayload {
   referralCode?: string;
 }
 
-const INTENT_BADGE: Record<LeadIntent, "danger" | "warning" | "info" | "default"> = {
+const INTENT_BADGE: Record<LeadIntent, "danger" | "warning" | "default"> = {
   hot: "danger",
   warm: "warning",
-  nurture: "info",
   cold: "default",
 };
 
@@ -60,7 +59,7 @@ function ResultHeadline({
       <span className="text-state-warning">[{highlight}]</span>
       {after ? (
         <>
-          <br />
+          {" "}
           {after}
         </>
       ) : null}
@@ -140,8 +139,8 @@ function ResultContent() {
       });
       if (!res.ok) throw new Error("Submission failed");
       setSubmitted(true);
-      // For hot/warm results: data is captured — now open the booking calendar.
-      // The user may not schedule; the saved email allows follow-up.
+      // HOT and WARM: open the booking calendar after capturing contact details.
+      // COLD: no booking link — report only.
       if ((isHot || isWarm) && outcome) {
         window.open(outcome.ctaUrl, "_blank", "noopener,noreferrer");
       }
@@ -171,6 +170,7 @@ function ResultContent() {
 
   const isHot = outcome.leadIntent === "hot";
   const isWarm = outcome.leadIntent === "warm";
+  const isCold = outcome.leadIntent === "cold";
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-canvas">
@@ -212,7 +212,10 @@ function ResultContent() {
 
           {/* Description — supports [10%] and [competitive rates] tokens */}
           <div className="border-t border-border-subtle px-8 py-6">
-            <RichBody text={outcome.description} className="text-sm text-text-secondary leading-relaxed whitespace-pre-line" />
+            <RichBody
+              text={outcome.description}
+              className="text-sm text-text-secondary leading-relaxed whitespace-pre-line"
+            />
           </div>
         </div>
 
@@ -244,7 +247,7 @@ function ResultContent() {
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
 
-                {/* Email — always required regardless of upfront capture */}
+                {/* Email — always required */}
                 <div className="space-y-1">
                   <label htmlFor="email" className="text-xs font-sans text-text-secondary">
                     {RESULT_COPY.emailLabel}
@@ -268,7 +271,7 @@ function ResultContent() {
                   )}
                 </div>
 
-                {/* Name + Company — (optional) beside label */}
+                {/* Name + Company */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label htmlFor="name" className="text-xs font-sans text-text-secondary flex items-center gap-1">
@@ -292,7 +295,7 @@ function ResultContent() {
                   <div className="space-y-1">
                     <label htmlFor="company" className="text-xs font-sans text-text-secondary flex items-center gap-1">
                       {RESULT_COPY.companyPlaceholder}
-                      <span className="text-text-tertiary">{RESULT_COPY.companyOptional}</span>
+                      <span className="text-text-tertiary">{RESULT_COPY.nameOptional}</span>
                     </label>
                     <input
                       id="company"
@@ -310,7 +313,7 @@ function ResultContent() {
                   </div>
                 </div>
 
-                {/* Newsletter opt-in — unchecked by default */}
+                {/* Newsletter opt-in */}
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -366,7 +369,7 @@ function ResultContent() {
             </div>
           </div>
         ) : (
-          /* Post-submit: cold/nurture — checklist confirmation */
+          /* Post-submit: cold — report sent confirmation */
           <div className="rounded-2xl border border-border-default bg-surface-card overflow-hidden">
             <div className="p-8 space-y-4">
               <Badge variant="success">Sent</Badge>

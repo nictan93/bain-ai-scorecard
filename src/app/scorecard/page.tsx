@@ -225,16 +225,14 @@ export default function ScorecardPage() {
   }, []);
 
   const progress = currentQuestion
-    ? getQuestionProgress(currentQuestion.id, state.track)
+    ? getQuestionProgress(currentQuestion.id, state.track, state.answers)
     : { current: 0, total: 0 };
 
   const isRoutingQuestion = currentQuestion?.id === "q1_routing";
 
   const totalForProgress = isRoutingQuestion
     ? progress.total
-    : state.track
-    ? QUESTIONS.filter((q) => q.track === state.track).length
-    : 0;
+    : progress.total;
 
   // ── Idle (start screen) ──────────────────────────────────────────────
   if (state.step === "idle") {

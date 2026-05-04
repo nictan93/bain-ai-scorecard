@@ -1,12 +1,14 @@
 import { QUESTIONS, MAX_SCORE, type Track, type ResultKey, type DeliverableKey } from "@/content/questions";
 
-// ── Aggregate score (kept for analytics/CRM; never shown to user) ─────────────
+// ── Aggregate score (kept for analytics/CRM; never shown to user) ─────────
 
 export function calculateScore(
   track: Track,
   answers: Record<string, string | string[]>
 ): number {
-  const trackQuestions = QUESTIONS.filter((q) => q.track === track);
+  const trackQuestions = QUESTIONS.filter(
+    (q) => q.track === track || q.track === "universal"
+  );
   let total = 0;
   for (const question of trackQuestions) {
     if (question.type === "open_text" || !question.options) continue;
@@ -37,97 +39,65 @@ export function scoreAsPercent(score: number, track: Track): number {
   return Math.round((score / max) * 100);
 }
 
-// ── ESOP hard routing ────────────────────────────────────────────────────────
+// ── ESOP decision tree result ─────────────────────────────────────────────
 //
-// Rules evaluated in priority order. First match wins.
-// Option IDs below are the codebase IDs (descriptive form), mapped from
-// the spec's shorthand (a1_yes_existing → "already_issue_options", etc.).
+// The result is determined by the explicit decision tree logic, not by score.
+//
+// Branch A (already has ESOP):
+//   - No formal valuation (or not sure)          → esop_hot_compliance
+//   - Formal valuation + dissatisfied            → esop_hot_dissatisfied
+//   - Formal valuation + satisfied               → esop_warm_satisfied
+//
+// Branch B/C (planning or no ESOP):
+//   - Someone asking + near-term (≤3 months)     → esop_hot_active_ask
+//   - Someone asking + far-term (>3 months)      → esop_warm_active_ask
+//   - Nobody asking + near-term (≤3 months)      → esop_warm_near_term
+//   - Nobody asking + far-term (>3 months)       → esop_cold
 
 export function calculateEsopResult(
   answers: Record<string, string | string[]>
 ): ResultKey {
-  const q1 = answers["q1_routing"] as string | undefined;
-  const a1 = answers["a1"] as string | undefined;
-  const a2 = answers["a2"] as string | undefined;
-  const a3 = answers["a3"] as string | undefined;
-  const a4 = answers["a4"] as string | undefined;
-  const a5 = answers["a5"] as string | undefined;
-  const a6 = answers["a6"] as string | undefined;
+  const esopStatus = answers["a_esop_status"] as string | undefined;
+  const formalValuation = answers["a1_formal_valuation"] as string | undefined;
+  const satisfaction = answers["a2_satisfaction"] as string | undefined;
+  const asking = answers["bc1_asking"] as string | undefined;
+  const timing = answers["bc3_timing"] as string | undefined;
 
-  // ── esop_required (hard triggers) ──────────────────────────────────────
-  if (
-    q1 === "already_have_esops_need_valuation_support" ||
-    a1 === "already_issue_options" ||
-    a2 === "external_party_asked_valuation_support" ||
-    a3 === "yes_outdated" ||
-    a3 === "internal_estimates_only" ||
-    a4 === "auditor" ||
-    a4 === "investor" ||
-    a4 === "board" ||
-    a6 === "comparing_providers" ||
-    // existing ESOP with no formal valuation (or unsure if one exists)
-    (a1 === "already_issue_options" &&
-      (a3 === "no_formal_valuation" || a3 === "not_sure_valuation")) ||
-    // planning soon + external stakeholder pressure
-    (a1 === "plan_to_issue_soon" &&
-      (a4 === "auditor" || a4 === "investor" || a4 === "board")) ||
-    // planning soon + urgent timeline
-    (a1 === "plan_to_issue_soon" &&
-      (a5 === "immediately" || a5 === "within_1_month"))
-  ) {
-    return "esop_required";
+  const hasExisting = esopStatus === "esop_yes_have_one";
+
+  // ── Branch A ─────────────────────────────────────────────────────────────
+  if (hasExisting) {
+    // No formal valuation or unsure → immediate compliance gap
+    if (formalValuation === "a1_no" || formalValuation === "a1_not_sure") {
+      return "esop_hot_compliance";
+    }
+    // Formal valuation done — check satisfaction
+    if (satisfaction === "a2_no_dissatisfied" || satisfaction === "a2_not_sure") {
+      return "esop_hot_dissatisfied";
+    }
+    // Satisfied (regardless of price sensitivity or timing)
+    return "esop_warm_satisfied";
   }
 
-  // ── esop_likely_needed ──────────────────────────────────────────────────
-  if (
-    a1 === "plan_to_issue_soon" ||
-    a2 === "investor_or_board_expect_esop" ||
-    a5 === "immediately" ||
-    a5 === "within_1_month" ||
-    a5 === "within_3_months" ||
-    (a1 === "considering_not_decided" &&
-      (a5 === "immediately" || a5 === "within_1_month" || a5 === "within_3_months")) ||
-    ((a2 === "retain_key_employees" ||
-      a2 === "reward_early_team" ||
-      a2 === "reduce_cash_salary_pressure") &&
-      (a5 === "immediately" || a5 === "within_1_month" || a5 === "within_3_months"))
-  ) {
-    return "esop_likely_needed";
-  }
+  // ── Branch B/C ────────────────────────────────────────────────────────────
+  const someoneAsking =
+    asking === "bc1_yes_asking" || asking === "bc1_may_come_up";
+  const nearTerm =
+    timing === "bc3_within_1_month" || timing === "bc3_within_3_months";
 
-  // ── esop_planning ───────────────────────────────────────────────────────
-  if (
-    a1 === "considering_not_decided" ||
-    a1 === "not_sure_esop" ||
-    a2 === "retain_key_employees" ||
-    a2 === "reward_early_team" ||
-    a2 === "reduce_cash_salary_pressure" ||
-    a2 === "not_sure_how_esops_work" ||
-    a4 === "founder_management" ||
-    a4 === "hr_people_team" ||
-    a4 === "nobody_planning_ahead"
-  ) {
-    return "esop_planning";
-  }
-
-  // ── esop_no_need (fallback) ─────────────────────────────────────────────
-  return "esop_no_need";
+  if (someoneAsking && nearTerm) return "esop_hot_active_ask";
+  if (someoneAsking && !nearTerm) return "esop_warm_active_ask";
+  if (!someoneAsking && nearTerm) return "esop_warm_near_term";
+  return "esop_cold";
 }
 
-// ── Business Value component-score routing ───────────────────────────────────
+// ── Business Value result ─────────────────────────────────────────────────
 //
-// Each question contributes to a specific sub-score.
-// B1 is not used in routing (only the direct ID check b1_dont_know matters).
-// painScore = max(B2 pain score, B7 pain score).
-
-function b2PainScore(answer: string | undefined): number {
-  switch (answer) {
-    case "yes_definitely": return 3;
-    case "maybe":          return 2;
-    case "not_sure_bv":    return 1;
-    default:               return 0;
-  }
-}
+// HOT:  Strong event trigger (fundraising/selling/investors) + near-term urgency
+//       + (strong pain OR strong asset signal)
+// WARM_TRANSACTION: Strong event trigger + far-term OR near-term but weak signals
+// WARM_ASSETS: No strong event trigger + strong asset signal + strong pain
+// COLD: No strong event trigger + no near-term urgency + weak signals
 
 function b3AssetSignalScore(answer: string[] | undefined): number {
   if (!Array.isArray(answer)) return 0;
@@ -148,105 +118,53 @@ function b3AssetSignalScore(answer: string[] | undefined): number {
   return Math.min(sum, 6);
 }
 
-function b4EvidenceScore(answer: string | undefined): number {
-  switch (answer) {
-    case "yes_clearly":       return 3;
-    case "somewhat":          return 2;
-    case "not_really":        return 2;
-    case "no_evidence":       return 1;
-    case "not_sure_evidence": return 1;
-    default:                  return 0;
-  }
-}
-
-function b5ValuationEventScore(answer: string | undefined): number {
-  switch (answer) {
-    case "fundraising":                          return 3;
-    case "selling_the_business":                 return 3;
-    case "bringing_investors_or_shareholders":   return 3;
-    case "succession_or_restructuring":          return 2;
-    case "board_bank_auditor_or_partner_explanation": return 2;
-    case "understand_what_business_is_worth":    return 1;
-    case "just_curious":                         return 0;
-    default:                                     return 0;
-  }
-}
-
-function b6UrgencyScore(answer: string | undefined): number {
-  switch (answer) {
-    case "now":                  return 3;
-    case "within_3_months_bv":   return 3;
-    case "within_6_months_bv":   return 2;
-    case "within_12_months":     return 1;
-    case "no_clear_timeline_bv": return 0;
-    default:                     return 0;
-  }
-}
-
-function b7PainScore(answer: string | undefined): number {
-  switch (answer) {
-    case "investors_may_not_understand_true_value":           return 3;
-    case "buyers_may_value_us_too_cheaply":                   return 3;
-    case "brand_software_data_ip_or_customer_base_not_reflected": return 3;
-    case "do_not_know_how_to_prove_business_worth_more":      return 2;
-    case "valued_only_on_profit_or_revenue":                  return 2;
-    case "not_concerned":                                     return 0;
-    default:                                                  return 0;
-  }
-}
-
 export function calculateBusinessValueResult(
   answers: Record<string, string | string[]>
 ): ResultKey {
-  const b1 = answers["b1"] as string | undefined;
   const b2 = answers["b2"] as string | undefined;
   const b3 = answers["b3"] as string[] | undefined;
-  const b4 = answers["b4"] as string | undefined;
   const b5 = answers["b5"] as string | undefined;
   const b6 = answers["b6"] as string | undefined;
   const b7 = answers["b7"] as string | undefined;
 
-  const assetSignalScore    = b3AssetSignalScore(b3);
-  const valuationEventScore = b5ValuationEventScore(b5);
-  const urgencyScore        = b6UrgencyScore(b6);
-  const painScore           = Math.max(b2PainScore(b2), b7PainScore(b7));
-  const evidenceScore       = b4EvidenceScore(b4);
+  const assetSignalScore = b3AssetSignalScore(b3);
 
-  // ── business_value_review ───────────────────────────────────────────────
-  if (
-    (valuationEventScore >= 2 && assetSignalScore >= 3) ||
-    (painScore >= 3 && assetSignalScore >= 3) ||
-    (valuationEventScore >= 3 && painScore >= 2) ||
-    (urgencyScore >= 3 && assetSignalScore >= 3)
-  ) {
-    return "business_value_review";
+  const strongEvent =
+    b5 === "fundraising" ||
+    b5 === "selling_the_business" ||
+    b5 === "bringing_investors_or_shareholders";
+
+  const nearTerm =
+    b6 === "now" || b6 === "within_3_months_bv";
+
+  const strongPain =
+    b2 === "yes_definitely" ||
+    b7 === "investors_may_not_understand_true_value" ||
+    b7 === "buyers_may_value_us_too_cheaply" ||
+    b7 === "brand_software_data_ip_or_customer_base_not_reflected";
+
+  const strongAssets = assetSignalScore >= 3;
+
+  // HOT: transaction happening soon with evidence of hidden value
+  if (strongEvent && nearTerm && (strongPain || strongAssets)) {
+    return "bv_hot";
   }
 
-  // ── hidden_value_found ──────────────────────────────────────────────────
-  if (
-    assetSignalScore >= 3 ||
-    (assetSignalScore >= 2 && painScore >= 2) ||
-    (assetSignalScore >= 2 && evidenceScore <= 2 && b4 !== "yes_clearly")
-  ) {
-    return "hidden_value_found";
+  // WARM_TRANSACTION: transaction planned but not urgent, or near-term but weak signals
+  if (strongEvent) {
+    return "bv_warm_transaction";
   }
 
-  // ── early_value_discovery ───────────────────────────────────────────────
-  if (
-    assetSignalScore === 1 || assetSignalScore === 2 ||
-    painScore === 1 || painScore === 2 ||
-    valuationEventScore === 1 ||
-    b1 === "do_not_know" ||
-    (Array.isArray(b3) && b3.includes("not_sure_bv3"))
-  ) {
-    return "early_value_discovery";
+  // WARM_ASSETS: no transaction but strong assets + strong pain
+  if (strongAssets && strongPain) {
+    return "bv_warm_assets";
   }
 
-  // ── no_clear_valuation_need (fallback) ──────────────────────────────────
-  return "no_clear_valuation_need";
+  // COLD: just exploring, no transaction, weak signals
+  return "bv_cold";
 }
 
-// ── Public entry point ───────────────────────────────────────────────────────
+// ── Public entry point ────────────────────────────────────────────────────
 
 export function calculateResultKey(
   track: Track,
@@ -257,19 +175,59 @@ export function calculateResultKey(
     : calculateBusinessValueResult(answers);
 }
 
-// ── Deliverable mapping ──────────────────────────────────────────────────────
+// ── Deliverable mapping ───────────────────────────────────────────────────
+//
+// ESOP deliverable is determined by branch + concern answer, not just result.
+// Branch A always gets compliance guide.
+// Branch B/C deliverable is based on bc2_concern answer.
 
-export const DELIVERABLE_BY_RESULT: Record<ResultKey, DeliverableKey> = {
-  esop_no_need:             "esop_starter_checklist",
-  esop_planning:            "esop_valuation_checklist",
-  esop_likely_needed:       "esop_valuation_checklist",
-  esop_required:            "esop_valuation_document_checklist",
-  no_clear_valuation_need:  "hidden_value_checklist",
-  early_value_discovery:    "hidden_value_checklist",
-  hidden_value_found:       "hidden_value_checklist",
-  business_value_review:    "investor_evidence_checklist",
-};
+export function getDeliverableKey(
+  resultKey: ResultKey,
+  answers: Record<string, string | string[]> = {}
+): DeliverableKey {
+  // ESOP track
+  if (
+    resultKey === "esop_hot_compliance" ||
+    resultKey === "esop_hot_dissatisfied" ||
+    resultKey === "esop_warm_satisfied"
+  ) {
+    return "esop_compliance_guide";
+  }
 
-export function getDeliverableKey(resultKey: ResultKey): DeliverableKey {
-  return DELIVERABLE_BY_RESULT[resultKey];
+  if (
+    resultKey === "esop_hot_active_ask" ||
+    resultKey === "esop_warm_active_ask" ||
+    resultKey === "esop_warm_near_term" ||
+    resultKey === "esop_cold"
+  ) {
+    const concern = answers["bc2_concern"] as string | undefined;
+    if (concern === "bc2_legal_tax" || concern === "bc2_communication") {
+      return "esop_communication_guide";
+    }
+    if (
+      concern === "bc2_allocation" ||
+      concern === "bc2_valuation" ||
+      concern === "bc2_dilution"
+    ) {
+      return "esop_structuring_guide";
+    }
+    return "esop_starter_guide";
+  }
+
+  // Business Value track
+  const b5 = answers["b5"] as string | undefined;
+
+  if (b5 === "fundraising" || b5 === "bringing_investors_or_shareholders") {
+    return "bv_fundraising_guide";
+  }
+  if (b5 === "selling_the_business" || b5 === "succession_or_restructuring") {
+    return "bv_mna_guide";
+  }
+  if (
+    b5 === "board_bank_auditor_or_partner_explanation" ||
+    b5 === "understand_what_business_is_worth"
+  ) {
+    return "bv_intangibles_guide";
+  }
+  return "bv_starter_guide";
 }
