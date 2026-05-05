@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(webhookPayload),
-          // Google Apps Script Web Apps require redirect following
-          redirect: "follow",
+          // Do NOT follow redirects u2014 GAS executes doPost before the 302. Following converts POST to GET (405).
+          redirect: "manual",
         });
       } catch (webhookErr) {
         // Log but don't fail the user-facing response
