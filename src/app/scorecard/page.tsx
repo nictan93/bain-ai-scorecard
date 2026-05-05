@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { ProgressHeader } from "@/components/scorecard/ProgressHeader";
 import { Question } from "@/components/scorecard/Question";
 import { QUESTIONS } from "@/content/questions";
-import { IDLE_COPY } from "@/content/copy";
 import {
   determineTrack,
   getNextQuestionId,
@@ -19,57 +18,89 @@ import { deriveTags } from "@/lib/tags";
 import type { Track } from "@/content/questions";
 
 interface AssessmentState {
-  step: "idle" | "in_progress" | "completed";
+  step: "in_progress" | "completed";
   currentQuestionId: string | null;
   track: Track | null;
   answers: Record<string, string | string[]>;
   openText: Record<string, string>;
   history: string[];
-  email: string;
-  referralCode: string;
 }
 
 const INITIAL_STATE: AssessmentState = {
-  step: "idle",
-  currentQuestionId: null,
+  step: "in_progress",
+  currentQuestionId: "q1_routing",
   track: null,
   answers: {},
   openText: {},
-  history: [],
-  email: "",
-  referralCode: "",
+  history: ["q1_routing"],
 };
-
-const PERSONAL_EMAIL_DOMAINS = new Set([
-  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com",
-  "live.com", "aol.com", "msn.com", "protonmail.com", "pm.me",
-  "me.com", "mac.com", "ymail.com", "googlemail.com", "yahoo.co.uk",
-  "hotmail.co.uk", "live.co.uk",
-]);
-
-function isBusinessEmail(email: string): boolean {
-  const domain = email.split("@")[1]?.toLowerCase();
-  return domain ? !PERSONAL_EMAIL_DOMAINS.has(domain) : false;
-}
 
 export default function ScorecardPage() {
   const router = useRouter();
   const [state, setState] = useState<AssessmentState>(INITIAL_STATE);
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  // Idle form state
-  const [idleEmail, setIdleEmail] = useState("");
-  const [idleReferral, setIdleReferral] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [referralError, setReferralError] = useState<string | null>(null);
-
   // Tracks the most recently toggled option ID for popup display
   const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
+
+  // Track whether we are currently handling a popstate event to avoid
+  // pushing a duplicate history entry in response to our own setState.
+  const handlingPopState = useRef(false);
 
   // Reset popup whenever the question changes
   useEffect(() => {
     setFocusedOptionId(null);
   }, [state.currentQuestionId]);
+
+  // ── Browser history integration ─────────────────────────────────────────
+  // Each time the question advances, push a new browser history entry so the
+  // native back gesture/button navigates between questions instead of leaving
+  // the page entirely.
+
+  const historyLengthRef = useRef(state.history.length);
+
+  useEffect(() => {
+    const newLength = state.history.length;
+    const prevLength = historyLengthRef.current;
+    historyLengthRef.current = newLength;
+
+    if (handlingPopState.current) {
+      handlingPopState.current = false;
+      return;
+    }
+
+    if (newLength > prevLength) {
+      // User moved forward — push a new browser history entry
+      window.history.pushState({ questionIndex: newLength - 1 }, "");
+    }
+  }, [state.history]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      handlingPopState.current = true;
+      setState((s) => {
+        const history = s.history;
+        if (history.length <= 1) {
+          // No more questions to go back to — let the browser navigate away
+          handlingPopState.current = false;
+          router.push("/");
+          return s;
+        }
+        const prev = history[history.length - 2];
+        setDirection(-1);
+        return {
+          ...s,
+          currentQuestionId: prev,
+          history: history.slice(0, -1),
+        };
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [router]);
+
+  // ── Derived values ───────────────────────────────────────────────────────
 
   const currentQuestion = state.currentQuestionId
     ? QUESTIONS.find((q) => q.id === state.currentQuestionId) ?? null
@@ -97,38 +128,7 @@ export default function ScorecardPage() {
     return currentQuestion.options?.find((o) => o.id === focusedOptionId)?.popup ?? null;
   }, [currentQuestion, focusedOptionId]);
 
-  const handleIdleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      setEmailError(null);
-      setReferralError(null);
-
-      let valid = true;
-      const email = idleEmail.trim();
-      const referral = idleReferral.trim();
-
-      if (referral && !email) {
-        setEmailError("A business email is required when using a referral code.");
-        valid = false;
-      } else if (email && !isBusinessEmail(email)) {
-        setEmailError("Please enter a business email address.");
-        valid = false;
-      }
-
-      if (!valid) return;
-
-      setState((s) => ({
-        ...s,
-        step: "in_progress",
-        currentQuestionId: "q1_routing",
-        history: ["q1_routing"],
-        email,
-        referralCode: referral,
-      }));
-      setDirection(1);
-    },
-    [idleEmail, idleReferral]
-  );
+  // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleChange = useCallback(
     (value: string | string[], justToggled?: string) => {
@@ -186,8 +186,8 @@ export default function ScorecardPage() {
         tags,
         answers: state.answers,
         openText: state.openText,
-        email: state.email,
-        referralCode: state.referralCode,
+        email: "",
+        referralCode: "",
       };
 
       sessionStorage.setItem("scorecard_result", JSON.stringify(resultPayload));
@@ -213,7 +213,10 @@ export default function ScorecardPage() {
   const handleBack = useCallback(() => {
     setState((s) => {
       const history = s.history;
-      if (history.length <= 1) return { ...INITIAL_STATE };
+      if (history.length <= 1) {
+        router.push("/");
+        return s;
+      }
       const prev = history[history.length - 2];
       return {
         ...s,
@@ -222,129 +225,16 @@ export default function ScorecardPage() {
       };
     });
     setDirection(-1);
-  }, []);
+  }, [router]);
+
+  // ── Progress ─────────────────────────────────────────────────────────────
 
   const progress = currentQuestion
     ? getQuestionProgress(currentQuestion.id, state.track, state.answers)
     : { current: 0, total: 0 };
 
-  const isRoutingQuestion = currentQuestion?.id === "q1_routing";
+  // ── Render ────────────────────────────────────────────────────────────────
 
-  const totalForProgress = isRoutingQuestion
-    ? progress.total
-    : progress.total;
-
-  // ── Idle (start screen) ──────────────────────────────────────────────
-  if (state.step === "idle") {
-    return (
-      <div className="min-h-screen flex flex-col bg-surface-canvas">
-
-        {/* Header */}
-        <header className="px-4 sm:px-6 py-4">
-          <div className="max-w-[1320px] mx-auto flex items-center justify-between">
-            <img src="/logo.png" alt="Bain Squared" className="h-8 w-auto" />
-          </div>
-        </header>
-
-        <main className="flex-1 flex flex-col px-4 sm:px-6 pb-6">
-          <div className="max-w-[1320px] w-full mx-auto bg-surface-card rounded-[32px] shadow-sm overflow-hidden">
-            <div className="px-8 sm:px-16 md:px-24 pt-16 pb-16 flex flex-col items-start sm:items-center text-left sm:text-center min-h-[560px]">
-
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-bold text-text-primary leading-[1.05] tracking-[-0.03em] mb-6">
-                {IDLE_COPY.headline}
-              </h1>
-
-              <p className="text-base sm:text-lg text-text-secondary max-w-[880px] mb-10 leading-relaxed">
-                {IDLE_COPY.subheadline}
-              </p>
-
-              <div className="mt-auto w-full flex flex-col items-start sm:items-center">
-                <form
-                  onSubmit={handleIdleSubmit}
-                  className="w-full max-w-sm space-y-4"
-                  noValidate
-                >
-                  <div className="space-y-2 text-left">
-                    <label
-                      htmlFor="idle_email"
-                      className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
-                    >
-                      Business email{" "}
-                      <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
-                    </label>
-                    <input
-                      id="idle_email"
-                      type="email"
-                      value={idleEmail}
-                      onChange={(e) => {
-                        setIdleEmail(e.target.value);
-                        setEmailError(null);
-                      }}
-                      placeholder="your@company.com"
-                      autoComplete="email"
-                      className={[
-                        "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
-                        "focus:outline-none focus:border-brand-primary",
-                        "transition-colors duration-[180ms]",
-                        emailError ? "border-state-danger" : "border-border-default",
-                      ].join(" ")}
-                    />
-                    {emailError && (
-                      <p className="text-xs text-state-danger">{emailError}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 text-left">
-                    <label
-                      htmlFor="idle_referral"
-                      className="text-xs font-sans font-medium text-text-secondary uppercase tracking-wider"
-                    >
-                      Referral code{" "}
-                      <span className="normal-case tracking-normal text-text-tertiary">(optional)</span>
-                    </label>
-                    <input
-                      id="idle_referral"
-                      type="text"
-                      value={idleReferral}
-                      onChange={(e) => {
-                        setIdleReferral(e.target.value);
-                        setReferralError(null);
-                      }}
-                      placeholder={IDLE_COPY.referralPlaceholder}
-                      className={[
-                        "w-full rounded-xl border bg-surface-canvas px-4 py-3.5",
-                        "text-sm sm:text-base text-text-primary placeholder:text-text-tertiary",
-                        "focus:outline-none focus:border-brand-primary",
-                        "transition-colors duration-[180ms]",
-                        referralError ? "border-state-danger" : "border-border-default",
-                      ].join(" ")}
-                    />
-                    {referralError && (
-                      <p className="text-xs text-state-danger">{referralError}</p>
-                    )}
-                  </div>
-
-                  <div className="pt-2 flex justify-start sm:justify-center">
-                    <Button type="submit" variant="primary" size="lg">
-                      {IDLE_COPY.ctaLabel}
-                    </Button>
-                  </div>
-                </form>
-
-                <p className="text-sm text-text-tertiary mt-4">
-                  {IDLE_COPY.disclaimer}
-                </p>
-              </div>
-
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // ── In progress ──────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-surface-canvas">
       <header className="px-4 sm:px-6 py-4 border-b border-border-subtle">
@@ -353,7 +243,7 @@ export default function ScorecardPage() {
           <div className="flex-1">
             <ProgressHeader
               current={progress.current}
-              total={totalForProgress}
+              total={progress.total}
               track={state.track}
             />
           </div>
