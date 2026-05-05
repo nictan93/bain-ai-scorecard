@@ -47,18 +47,20 @@ export async function POST(req: NextRequest) {
       submittedAt: new Date().toISOString(),
     };
 
-    // Fire Zapier webhook (non-blocking best-effort)
-    const zapierUrl = process.env.ZAPIER_WEBHOOK_URL;
-    if (zapierUrl) {
+    // Fire Google Apps Script webhook directly (non-blocking best-effort)
+    const gasUrl = process.env.GAS_WEBHOOK_URL;
+    if (gasUrl) {
       try {
-        await fetch(zapierUrl, {
+        await fetch(gasUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(webhookPayload),
+          // Google Apps Script Web Apps require redirect following
+          redirect: "follow",
         });
       } catch (webhookErr) {
         // Log but don't fail the user-facing response
-        console.error("[scorecard] zapier webhook error", webhookErr);
+        console.error("[scorecard] gas webhook error", webhookErr);
       }
     }
 
