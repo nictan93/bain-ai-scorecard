@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ReferralCapture } from "@/components/ReferralCapture";
 import "./globals.css";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body className="min-h-full bg-surface-canvas text-text-primary font-sans">
         <ReferralCapture />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
