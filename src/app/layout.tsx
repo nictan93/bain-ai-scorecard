@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ReferralCapture } from "@/components/ReferralCapture";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,6 +25,7 @@ export default function RootLayout({
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-surface-canvas text-text-primary font-sans">
+        <ReferralCapture />
         {children}
       </body>
     </html>

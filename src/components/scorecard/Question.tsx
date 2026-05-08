@@ -10,37 +10,6 @@ interface QuestionProps {
 }
 
 export function Question({ question, value, onChange }: QuestionProps) {
-  if (question.type === "open_text") {
-    return (
-      <div className="space-y-4">
-        <div className="space-y-2 text-left">
-          <label
-            htmlFor={question.id}
-            className="block text-2xl font-sans font-bold text-text-primary leading-snug"
-          >
-            {question.prompt}
-          </label>
-          {question.helper && (
-            <p className="text-sm text-text-secondary">{question.helper}</p>
-          )}
-        </div>
-        <textarea
-          id={question.id}
-          value={typeof value === "string" ? value : ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Write as much or as little as is useful."
-          rows={6}
-          className={[
-            "w-full rounded-xl border border-border-default bg-surface-card",
-            "px-4 py-3 text-base text-text-primary placeholder:text-text-tertiary",
-            "resize-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2",
-            "transition-colors duration-[180ms]",
-          ].join(" ")}
-        />
-      </div>
-    );
-  }
-
   if (question.type === "multi_select") {
     const selected = Array.isArray(value) ? value : [];
 

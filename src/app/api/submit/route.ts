@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { calculateResultKey, getDeliverableKey } from "@/lib/scoring";
-import { OUTCOMES } from "@/content/outcomes";
-import type { Track } from "@/content/questions";
+import { calculateFullResult } from "@/lib/scoring";
+import { REPORT_TITLES } from "@/content/outcomes";
 
 const SubmissionSchema = z.object({
   email: z.string().email(),
   name: z.string().optional(),
   company: z.string().optional(),
-  track: z.enum(["esop", "business_value"]),
   newsletterOptIn: z.boolean().optional(),
-  score: z.number(),
-  maxScore: z.number(),
-  tags: z.array(z.string()).optional(),
+  track: z.enum(["esop", "intangible_value"]),
   answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
-  openText: z.record(z.string(), z.string()).optional(),
+  tags: z.array(z.string()).optional(),
   referralCode: z.string().optional(),
 });
 
@@ -23,31 +19,43 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as unknown;
     const data = SubmissionSchema.parse(body);
 
-    // Derive result key server-side from answers — never trust client-supplied resultKey
-    const track = data.track as Track;
-    const resultKey = calculateResultKey(track, data.answers ?? {});
-    const deliverableKey = getDeliverableKey(resultKey, data.answers ?? {});
-    const outcome = OUTCOMES.find((o) => o.id === resultKey);
+    // Always recompute classification server-side from answers
+    const fullResult = calculateFullResult(data.track, data.answers ?? {});
 
     const webhookPayload = {
+      submitted_at: new Date().toISOString(),
+
+      // Contact
       email: data.email,
       name: data.name ?? "",
       company: data.company ?? "",
-      referralCode: data.referralCode ?? "",
-      track,
-      score: data.score,
-      maxScore: data.maxScore,
-      resultKey,
-      deliverableKey,
-      outcomeLabel: outcome?.label ?? "",
-      statusLabel: outcome?.statusLabel ?? "",
+      newsletter_opt_in: data.newsletterOptIn ?? false,
+      referral_code: data.referralCode ?? "",
+
+      // Classification
+      track: data.track,
+      result_key: fullResult.resultKey,
+      lead_temperature: fullResult.leadTemperature,
+      lead_temperature_ui: fullResult.leadTemperatureUi,
+      lead_score: fullResult.leadScore,
+      report_key: fullResult.reportKey,
+      report_title: REPORT_TITLES[fullResult.reportKey],
+
+      // ESOP-specific
+      esop_sub_track: fullResult.esopSubTrack ?? "",
+
+      // IV-specific
+      event_group: fullResult.eventGroup ?? "",
+      asset_signal_group: fullResult.assetSignalGroup ?? "",
+      documentation_group: fullResult.documentationGroup ?? "",
+      pain_group: fullResult.painGroup ?? "",
+
+      // Tags and answers
       tags: data.tags ?? [],
-      openText: data.openText ?? {},
-      newsletterOptIn: data.newsletterOptIn ?? false,
-      submittedAt: new Date().toISOString(),
+      answers: data.answers ?? {},
     };
 
-    // Fire Google Apps Script webhook directly (non-blocking best-effort)
+    // Fire Google Apps Script webhook (non-blocking best-effort)
     const gasUrl = process.env.GAS_WEBHOOK_URL;
     if (gasUrl) {
       try {
@@ -55,25 +63,32 @@ export async function POST(req: NextRequest) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(webhookPayload),
-          // Do NOT follow redirects u2014 GAS executes doPost before the 302. Following converts POST to GET (405).
+          // GAS executes doPost before the 302 redirect. Do not follow redirects
+          // — following them converts POST to GET which returns 405.
           redirect: "manual",
         });
       } catch (webhookErr) {
-        // Log but don't fail the user-facing response
         console.error("[scorecard] gas webhook error", webhookErr);
       }
     }
 
-    console.log("[scorecard] submission received", {
+    console.log("[scorecard] submission", {
       email: data.email,
-      track,
-      score: data.score,
-      resultKey,
-      deliverableKey,
+      track: data.track,
+      result_key: fullResult.resultKey,
+      lead_temperature: fullResult.leadTemperature,
+      lead_score: fullResult.leadScore,
+      report_key: fullResult.reportKey,
       tags: data.tags,
     });
 
-    return NextResponse.json({ success: true, resultKey, deliverableKey });
+    return NextResponse.json({
+      success: true,
+      resultKey: fullResult.resultKey,
+      reportKey: fullResult.reportKey,
+      leadTemperature: fullResult.leadTemperature,
+    });
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

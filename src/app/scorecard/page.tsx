@@ -13,7 +13,7 @@ import {
   isLastQuestion,
   getQuestionProgress,
 } from "@/lib/routing";
-import { calculateScore, getMaxScore, calculateResultKey } from "@/lib/scoring";
+import { calculateFullResult } from "@/lib/scoring";
 import { deriveTags } from "@/lib/tags";
 import type { Track } from "@/content/questions";
 
@@ -22,7 +22,6 @@ interface AssessmentState {
   currentQuestionId: string | null;
   track: Track | null;
   answers: Record<string, string | string[]>;
-  openText: Record<string, string>;
   history: string[];
 }
 
@@ -31,7 +30,6 @@ const INITIAL_STATE: AssessmentState = {
   currentQuestionId: "q1_routing",
   track: null,
   answers: {},
-  openText: {},
   history: ["q1_routing"],
 };
 
@@ -40,24 +38,19 @@ export default function ScorecardPage() {
   const [state, setState] = useState<AssessmentState>(INITIAL_STATE);
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  // Tracks the most recently toggled option ID for popup display
   const [focusedOptionId, setFocusedOptionId] = useState<string | null>(null);
 
-  // Track whether we are currently handling a popstate event to avoid
-  // pushing a duplicate history entry in response to our own setState.
   const handlingPopState = useRef(false);
 
-  // Reset popup whenever the question changes
   useEffect(() => {
     setFocusedOptionId(null);
   }, [state.currentQuestionId]);
 
   // ── Browser history integration ─────────────────────────────────────────
-  // Each time the question advances, push a new browser history entry so the
-  // native back gesture/button navigates between questions instead of leaving
-  // the page entirely.
 
   const historyLengthRef = useRef(state.history.length);
+  const historyRef = useRef(state.history);
+  useEffect(() => { historyRef.current = state.history; }, [state.history]);
 
   useEffect(() => {
     const newLength = state.history.length;
@@ -70,30 +63,25 @@ export default function ScorecardPage() {
     }
 
     if (newLength > prevLength) {
-      // User moved forward — push a new browser history entry
       window.history.pushState({ questionIndex: newLength - 1 }, "");
     }
   }, [state.history]);
 
   useEffect(() => {
     const handlePopState = () => {
+      if (historyRef.current.length <= 1) {
+        handlingPopState.current = false;
+        router.push("/");
+        return;
+      }
       handlingPopState.current = true;
-      setState((s) => {
-        const history = s.history;
-        if (history.length <= 1) {
-          // No more questions to go back to — let the browser navigate away
-          handlingPopState.current = false;
-          router.push("/");
-          return s;
-        }
-        const prev = history[history.length - 2];
-        setDirection(-1);
-        return {
-          ...s,
-          currentQuestionId: prev,
-          history: history.slice(0, -1),
-        };
-      });
+      const prev = historyRef.current[historyRef.current.length - 2];
+      setDirection(-1);
+      setState((s) => ({
+        ...s,
+        currentQuestionId: prev,
+        history: s.history.slice(0, -1),
+      }));
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -107,22 +95,17 @@ export default function ScorecardPage() {
     : null;
 
   const currentValue: string | string[] = currentQuestion
-    ? currentQuestion.type === "open_text"
-      ? (state.openText[currentQuestion.id] ?? "")
-      : currentQuestion.type === "multi_select"
+    ? currentQuestion.type === "multi_select"
       ? ((state.answers[currentQuestion.id] as string[] | undefined) ?? [])
       : ((state.answers[currentQuestion.id] as string | undefined) ?? "")
     : "";
 
   const canAdvance =
     currentQuestion !== null &&
-    (currentQuestion.type === "open_text"
-      ? true
-      : currentQuestion.type === "multi_select"
+    (currentQuestion.type === "multi_select"
       ? ((state.answers[currentQuestion.id] as string[] | undefined) ?? []).length > 0
       : Boolean(state.answers[currentQuestion.id]));
 
-  // Derive popup text from the focused option on the current question
   const currentPopupText = useMemo(() => {
     if (!currentQuestion || !focusedOptionId) return null;
     return currentQuestion.options?.find((o) => o.id === focusedOptionId)?.popup ?? null;
@@ -133,14 +116,6 @@ export default function ScorecardPage() {
   const handleChange = useCallback(
     (value: string | string[], justToggled?: string) => {
       if (!currentQuestion) return;
-
-      if (currentQuestion.type === "open_text") {
-        setState((s) => ({
-          ...s,
-          openText: { ...s.openText, [currentQuestion.id]: value as string },
-        }));
-        return;
-      }
 
       if (currentQuestion.type === "multi_select") {
         setState((s) => ({
@@ -173,25 +148,28 @@ export default function ScorecardPage() {
       const track = currentTrack;
       if (!track) return;
 
-      const score = calculateScore(track, state.answers);
-      const maxScore = getMaxScore(track);
-      const resultKey = calculateResultKey(track, state.answers);
+      const fullResult = calculateFullResult(track, state.answers);
       const tags = deriveTags(track, state.answers);
+
+      let referralCode = "";
+      try {
+        referralCode = localStorage.getItem("referral_code") ?? "";
+      } catch {
+        // localStorage unavailable
+      }
 
       const resultPayload = {
         track,
-        score,
-        maxScore,
-        resultKey,
+        fullResult,
         tags,
         answers: state.answers,
-        openText: state.openText,
-        email: "",
-        referralCode: "",
+        referralCode,
       };
 
       sessionStorage.setItem("scorecard_result", JSON.stringify(resultPayload));
-      router.push(`/scorecard/result?track=${track}&resultKey=${resultKey}&score=${score}&max=${maxScore}`);
+      router.push(
+        `/scorecard/result?track=${track}&resultKey=${fullResult.resultKey}&score=${fullResult.leadScore}`
+      );
       return;
     }
 
@@ -211,21 +189,18 @@ export default function ScorecardPage() {
   }, [currentQuestion, canAdvance, state, router]);
 
   const handleBack = useCallback(() => {
-    setState((s) => {
-      const history = s.history;
-      if (history.length <= 1) {
-        router.push("/");
-        return s;
-      }
-      const prev = history[history.length - 2];
-      return {
-        ...s,
-        currentQuestionId: prev,
-        history: history.slice(0, -1),
-      };
-    });
+    if (state.history.length <= 1) {
+      router.push("/");
+      return;
+    }
+    const prev = state.history[state.history.length - 2];
     setDirection(-1);
-  }, [router]);
+    setState((s) => ({
+      ...s,
+      currentQuestionId: prev,
+      history: s.history.slice(0, -1),
+    }));
+  }, [router, state.history]);
 
   // ── Progress ─────────────────────────────────────────────────────────────
 
@@ -253,7 +228,6 @@ export default function ScorecardPage() {
       <main className="flex-1 flex items-start justify-center px-6 py-12">
         <div className="max-w-2xl w-full space-y-4">
 
-          {/* Question — slides in/out on change */}
           <AnimatePresence mode="wait" initial={false}>
             {currentQuestion && (
               <motion.div
@@ -272,7 +246,6 @@ export default function ScorecardPage() {
             )}
           </AnimatePresence>
 
-          {/* Popup strip — fades in when an option is selected */}
           <AnimatePresence mode="wait">
             {currentPopupText && (
               <motion.div

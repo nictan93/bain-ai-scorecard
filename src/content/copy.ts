@@ -36,37 +36,34 @@ export const IDLE_COPY = {
 export const RESULT_COPY = {
   yourResultLabel: "YOUR RESULT",
 
-  // Email field
+  // Form field labels
   emailLabel: "Business email *",
   emailPlaceholder: "your@company.com",
-
-  // Name / Company labels
   namePlaceholder: "Name",
   nameOptional: "(optional)",
   companyPlaceholder: "Company",
   companyOptional: "(optional)",
-
-  // Newsletter checkbox — updated label
   newsletterCheckboxLabel: "I would like to receive newsletters from Bain Squared.",
+  privacyNote:
+    "Your email is used to send your report and track requested follow-up.\nWe do not send marketing newsletters unless you opt in.",
 
   // Submit states
   submittingLabel: "Sending...",
 
-  // Privacy note — shown below the submit button
-  // Replaces the old "We use your email..." text
-  privacyNote:
-    "Your email is only used for tracking referrals and requested follow-up.\nNo marketing newsletter spam.",
+  // Post-submit: HOT — report sent, show booking button
+  hotSubmitBadge: "Details saved",
+  hotBookingButtonLabel: "Book a discovery call",
 
-  // Post-submit: cold/nurture (checklist sent)
-  successHeadline: "You are in.",
-  successBody:
-    "Your result and the relevant checklist will arrive in your inbox shortly.",
+  // Post-submit: WARM / WARM_LOW — report sent, no booking button
+  warmSubmitBadge: "Sent",
 
-  // Post-submit: hot/warm (cal.com opened)
-  calOpenedHeadline: "Your details are saved.",
-  calOpenedBody:
-    "The booking calendar should be open in a new tab. Pick a time that works for you.",
-  calFallbackLabel: "Open booking calendar →",
+  // Post-submit: COLD — report sent, no booking button, no prompt
+  coldSubmitBadge: "Sent",
+
+  // 10% offer block (shown for ESOP A2 and A3 result codes)
+  offerBlockTitle: "Your company is eligible",
+  offerBlockBody:
+    "Send us your most recent ESOP valuation invoice and get 10% off your next ESOP valuation report with Bain Squared. You can use the review to benchmark price, quality, speed, and defensibility.",
 
   retakeLabel: "Retake the assessment",
 } as const;
