@@ -23,25 +23,17 @@ function esopNoFormalValuation(answers: Record<string, string | string[]>): bool
   return v === "no" || v === "not_sure";
 }
 
-function esopIsSatisfied(answers: Record<string, string | string[]>): boolean {
-  return answers["a2_satisfaction"] === "satisfied";
-}
-
 // ── ESOP branching next-question map ──────────────────────────────────────
 //
 // Branch A (already has ESOP):
-//   a_esop_status -> a_context_stage -> a_context_headcount
+//   q1_routing -> a_esop_status
 //   -> a1_formal_valuation
-//     -> if no/not_sure: a4_timing (HOT, skip rest)
-//     -> if yes: a2_satisfaction
-//       -> if satisfied: a3_price_factor -> a4_timing
-//       -> if dissatisfied/not_sure: a3_dissatisfied_reason -> a4_timing
-//   [terminal]
+//     -> if no/not_sure: TERMINAL (hot, result page)
+//     -> if yes: a2_satisfaction -> TERMINAL
 //
 // Branch B/C/U (planning, no ESOP, unsure):
-//   a_esop_status -> a_context_stage -> a_context_headcount
-//   -> bc1_asking -> bc2_concern -> bc3_timing
-//   [terminal]
+//   q1_routing -> a_esop_status
+//   -> bc1_asking -> bc3_timing -> bc2_concern -> TERMINAL
 
 function getNextEsopQuestionId(
   currentId: string,
@@ -52,42 +44,26 @@ function getNextEsopQuestionId(
       return "a_esop_status";
 
     case "a_esop_status":
-      return "a_context_stage";
-
-    case "a_context_stage":
-      return "a_context_headcount";
-
-    case "a_context_headcount":
       if (esopHasExisting(answers)) return "a1_formal_valuation";
       return "bc1_asking";
 
     // ── Branch A ──────────────────────────────────────────────────────────
     case "a1_formal_valuation":
-      if (esopNoFormalValuation(answers)) return "a4_timing";
+      if (esopNoFormalValuation(answers)) return null; // terminal: hot result
       return "a2_satisfaction";
 
     case "a2_satisfaction":
-      if (esopIsSatisfied(answers)) return "a3_price_factor";
-      return "a3_dissatisfied_reason";
-
-    case "a3_price_factor":
-      return "a4_timing";
-
-    case "a3_dissatisfied_reason":
-      return "a4_timing";
-
-    case "a4_timing":
-      return null; // terminal for branch A
+      return null; // terminal
 
     // ── Branch B/C/U ──────────────────────────────────────────────────────
     case "bc1_asking":
-      return "bc2_concern";
-
-    case "bc2_concern":
-      return "bc3_timing";
+      return "bc3_timing"; // timing now before concern
 
     case "bc3_timing":
-      return null; // terminal for branches B/C/U
+      return "bc2_concern"; // concern is the terminal question
+
+    case "bc2_concern":
+      return null; // terminal
 
     default:
       return null;
@@ -95,7 +71,8 @@ function getNextEsopQuestionId(
 }
 
 // ── Intangible Value next-question map ────────────────────────────────────
-// Linear: context questions first, then b1–b7
+// Master order: stage, headcount, valuation-method, value-gap, reason(b5),
+//               uncaptured-assets(b3), documentation(b4), timing(b6), concern(b7)
 
 function getNextIvQuestionId(currentId: string): string | null {
   const order: string[] = [
@@ -103,11 +80,11 @@ function getNextIvQuestionId(currentId: string): string | null {
     "b_context_headcount",
     "b1",
     "b2",
-    "b3",
-    "b4",
-    "b5",
-    "b6",
-    "b7",
+    "b5",  // reason / hard-trigger event (moved up from position 7)
+    "b3",  // uncaptured assets (multi-select)
+    "b4",  // documentation
+    "b6",  // timing
+    "b7",  // primary concern (terminal)
   ];
   const idx = order.indexOf(currentId);
   if (idx === -1 || idx === order.length - 1) return null;
@@ -138,8 +115,22 @@ export function getNextQuestionId(
   return null;
 }
 
-export function isLastQuestion(questionId: string, track: Track | null): boolean {
-  if (track === "esop") return questionId === "a4_timing" || questionId === "bc3_timing";
+// Returns true when the user clicking Next on this question should go to the result page.
+// For ESOP Branch A, a1_formal_valuation is terminal only when the answer is no/not_sure.
+export function isLastQuestion(
+  questionId: string,
+  track: Track | null,
+  answers?: Record<string, string | string[]>
+): boolean {
+  if (track === "esop") {
+    if (questionId === "bc2_concern") return true;
+    if (questionId === "a2_satisfaction") return true;
+    if (questionId === "a1_formal_valuation") {
+      const fv = answers?.["a1_formal_valuation"];
+      return fv === "no" || fv === "not_sure";
+    }
+    return false;
+  }
   if (track === "intangible_value") return questionId === "b7";
   return false;
 }
@@ -161,7 +152,7 @@ export function getQuestionProgress(
   if (track === "intangible_value") {
     const ivOrder = [
       "b_context_stage", "b_context_headcount",
-      "b1", "b2", "b3", "b4", "b5", "b6", "b7",
+      "b1", "b2", "b5", "b3", "b4", "b6", "b7",
     ];
     const idx = ivOrder.indexOf(questionId);
     return { current: idx >= 0 ? idx + 1 : 1, total: ivOrder.length };
@@ -172,24 +163,14 @@ export function getQuestionProgress(
 
 // Build the expected ESOP question path based on current answers
 function buildEsopPath(answers: Record<string, string | string[]>): string[] {
-  const base = ["a_esop_status", "a_context_stage", "a_context_headcount"];
-
   if (esopHasExisting(answers)) {
     // Branch A
-    const branchA = ["a1_formal_valuation"];
     if (esopNoFormalValuation(answers)) {
-      return [...base, ...branchA, "a4_timing"];
+      return ["a_esop_status", "a1_formal_valuation"];
     }
-    branchA.push("a2_satisfaction");
-    if (esopIsSatisfied(answers)) {
-      branchA.push("a3_price_factor");
-    } else {
-      branchA.push("a3_dissatisfied_reason");
-    }
-    branchA.push("a4_timing");
-    return [...base, ...branchA];
+    return ["a_esop_status", "a1_formal_valuation", "a2_satisfaction"];
   }
 
-  // Branch B/C/U
-  return [...base, "bc1_asking", "bc2_concern", "bc3_timing"];
+  // Branch B/C/U: pressure -> timing -> concern
+  return ["a_esop_status", "bc1_asking", "bc3_timing", "bc2_concern"];
 }

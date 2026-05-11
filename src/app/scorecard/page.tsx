@@ -144,7 +144,7 @@ export default function ScorecardPage() {
 
     const currentTrack = state.track;
 
-    if (isLastQuestion(currentQuestion.id, currentTrack)) {
+    if (isLastQuestion(currentQuestion.id, currentTrack, state.answers)) {
       const track = currentTrack;
       if (!track) return;
 
@@ -281,7 +281,7 @@ export default function ScorecardPage() {
             onClick={handleNext}
             disabled={!canAdvance}
           >
-            {currentQuestion && isLastQuestion(currentQuestion.id, state.track)
+            {currentQuestion && isLastQuestion(currentQuestion.id, state.track, state.answers)
               ? "See my result"
               : "Next"}
           </Button>

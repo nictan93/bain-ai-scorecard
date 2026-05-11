@@ -25,8 +25,21 @@ interface StoredPayload {
 
 // ── Form schema ───────────────────────────────────────────────────────────
 
+const CONSUMER_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "live.com",
+  "msn.com", "icloud.com", "me.com", "mac.com", "proton.me",
+  "protonmail.com", "aol.com", "mail.com", "gmx.com", "qq.com",
+  "163.com", "126.com",
+]);
+
 const emailSchema = z.object({
-  email: z.string().email("Enter a valid business email address."),
+  email: z
+    .string()
+    .email("Enter a valid business email address.")
+    .refine((v) => {
+      const domain = v.split("@")[1]?.toLowerCase();
+      return domain ? !CONSUMER_DOMAINS.has(domain) : true;
+    }, "A business email address helps us ensure your report is delivered correctly."),
   name: z.string().optional(),
   company: z.string().optional(),
   newsletterOptIn: z.boolean().optional(),
@@ -91,10 +104,10 @@ function ResultContent() {
 
   const reportTitle = fullResult ? REPORT_TITLES[fullResult.reportKey] : "";
 
-  // Resolve {{REPORT_TITLE}} token in ctaBody for ESOP B/C/U variants where
+  // Resolve {{report_title}} token in ctaBody for ESOP B/C/U variants where
   // the report title varies by concern selection.
-  const resolvedCtaBody = outcome?.ctaBody.replace("{{REPORT_TITLE}}", reportTitle) ?? "";
-  const resolvedAfterSubmitBody = outcome?.afterSubmitBody.replace("{{REPORT_TITLE}}", reportTitle) ?? "";
+  const resolvedCtaBody = outcome?.ctaBody.replace("{{report_title}}", reportTitle) ?? "";
+  const resolvedAfterSubmitBody = outcome?.afterSubmitBody.replace("{{report_title}}", reportTitle) ?? "";
 
   // ── Submit handler ───────────────────────────────────────────────────────
 

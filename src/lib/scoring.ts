@@ -93,7 +93,8 @@ function classifyBcuBranch(
   const timing = answers["bc3_timing"] as string | undefined;
 
   const pressureExists = asking === "yes_actively" || asking === "expected_soon";
-  const nearTerm = timing === "within_1_month" || timing === "within_1_to_3_months";
+  // near_term: immediately or within 1–3 months
+  const nearTerm = timing === "immediately" || timing === "within_1_to_3_months";
 
   if (branch === "B") {
     if (pressureExists && nearTerm)  return { leadTemperature: "hot",      resultCode: "ESOP_B1_PLANNING_PRESSURE_NEAR_HOT" };
@@ -107,7 +108,7 @@ function classifyBcuBranch(
     if (!pressureExists && nearTerm) return { leadTemperature: "warm", resultCode: "ESOP_C3_NO_ESOP_NO_PRESSURE_NEAR_WARM" };
     return                                  { leadTemperature: "cold", resultCode: "ESOP_C4_NO_ESOP_NO_PRESSURE_FAR_COLD" };
   }
-  // Branch U (unsure — same rules as C but U result codes)
+  // Branch U (unsure)
   if (pressureExists && nearTerm)  return { leadTemperature: "hot",  resultCode: "ESOP_U1_UNSURE_PRESSURE_NEAR_HOT" };
   if (pressureExists && !nearTerm) return { leadTemperature: "warm", resultCode: "ESOP_U2_UNSURE_PRESSURE_FAR_WARM" };
   if (!pressureExists && nearTerm) return { leadTemperature: "warm", resultCode: "ESOP_U3_UNSURE_NO_PRESSURE_NEAR_WARM" };
@@ -122,48 +123,17 @@ function calculateEsopLeadScore(
   const base: Record<LeadTemperature, number> = { hot: 70, warm: 40, warm_low: 30, cold: 10 };
   let score = base[leadTemperature];
 
-  // Stage modifier (same field used for both ESOP and IV context)
-  const stage = answers["a_context_stage"] as string | undefined;
-  if (stage === "bootstrapped_seed")   score += 5;
-  else if (stage === "series_a_b")     score += 10;
-  else if (stage === "growth_scaleup") score += 15;
-  else if (stage === "mature_profitable_sme") score += 10;
-
-  // Employee modifier
-  const employees = answers["a_context_headcount"] as string | undefined;
-  if (employees === "1_10")          score += 2;
-  else if (employees === "11_50")    score += 8;
-  else if (employees === "51_200")   score += 15;
-  else if (employees === "more_than_200") score += 20;
-
-  if (esopSubTrack === "existing_esop") {
-    // Branch A timing modifier
-    const timing = answers["a4_timing"] as string | undefined;
-    if (timing === "within_1_month")       score += 15;
-    else if (timing === "within_1_to_3_months") score += 10;
-    else if (timing === "more_than_3_months")    score += 3;
-
-    // Provider dissatisfaction modifier
-    const dissReason = answers["a3_dissatisfied_reason"] as string | undefined;
-    if (dissReason === "weak_report_quality" || dissReason === "hard_to_explain" || dissReason === "provider_not_esop_specialist") score += 10;
-    else if (dissReason === "slow_or_painful_process") score += 8;
-    else if (dissReason === "price_too_high" || dissReason === "other") score += 5;
-
-    // Price sensitivity modifier
-    const priceSensitivity = answers["a3_price_factor"] as string | undefined;
-    if (priceSensitivity === "price_matters") score += 3;
-    else if (priceSensitivity === "maybe_if_quality_strong") score += 5;
-
-  } else {
-    // Branch B/C/U: pressure + timing modifiers
+  if (esopSubTrack !== "existing_esop") {
+    // BCU: pressure + timing modifiers
     const asking = answers["bc1_asking"] as string | undefined;
-    if (asking === "yes_actively")  score += 15;
+    if (asking === "yes_actively")      score += 15;
     else if (asking === "expected_soon") score += 8;
 
     const timing = answers["bc3_timing"] as string | undefined;
-    if (timing === "within_1_month")       score += 15;
+    if (timing === "immediately")               score += 15;
     else if (timing === "within_1_to_3_months") score += 10;
-    else if (timing === "more_than_3_months")    score += 3;
+    else if (timing === "within_3_to_6_months") score += 5;
+    else if (timing === "more_than_6_months")   score += 3;
   }
 
   return Math.min(100, score);
@@ -219,11 +189,11 @@ function getEsopReportKey(
 // INTANGIBLE VALUE CLASSIFICATION
 // ══════════════════════════════════════════════════════════════════════════
 
+// Anchor assets drive strong_asset_signal (data_customer_database removed per master)
 const IV_ANCHOR_ASSETS = new Set([
   "recurring_revenue",
   "long_term_contracts",
   "software_platform_internal_tech",
-  "data_customer_database",
   "ip_trademarks_patents_designs_knowhow",
 ]);
 
@@ -241,7 +211,6 @@ export function deriveAssetSignalGroup(
     return "weak_or_uncertain_asset_signal";
   }
 
-  // If only exclusive non-asset options are selected
   const realAssets = selectedAssets.filter(
     (a) => a !== "none_of_the_above" && a !== "not_sure"
   );
@@ -338,50 +307,50 @@ function classifyIntangibleValue(params: {
   moderateValueGap: boolean;
 }): { leadTemperature: LeadTemperature; resultCode: ResultKey } {
   const { eventGroup, timing, strongValueGap, moderateValueGap } = params;
-  const nearTerm = timing === "now" || timing === "within_3_months";
+  const nearTerm  = timing === "now" || timing === "within_3_months";
   const planned   = timing === "within_6_months" || timing === "within_12_months";
   const noTimeline = timing === "no_clear_timeline";
 
   if (eventGroup === "capital_event") {
-    if (nearTerm && strongValueGap)  return { leadTemperature: "hot",      resultCode: "IV_CAPITAL_NEAR_VALUE_GAP_HOT" };
-    if (nearTerm)                    return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_NEAR_WEAK_SIGNAL_WARM" };
-    if (planned)                     return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_PLANNED_WARM" };
-    if (noTimeline && strongValueGap)return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_NO_TIMELINE_VALUE_GAP_WARM" };
-    return                                  { leadTemperature: "warm_low", resultCode: "IV_CAPITAL_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
+    if (nearTerm && strongValueGap)   return { leadTemperature: "hot",      resultCode: "IV_CAPITAL_NEAR_VALUE_GAP_HOT" };
+    if (nearTerm)                     return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_NEAR_WEAK_SIGNAL_WARM" };
+    if (planned)                      return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_PLANNED_WARM" };
+    if (noTimeline && strongValueGap) return { leadTemperature: "warm",     resultCode: "IV_CAPITAL_NO_TIMELINE_VALUE_GAP_WARM" };
+    return                                   { leadTemperature: "warm_low", resultCode: "IV_CAPITAL_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
   }
 
   if (eventGroup === "exit_event") {
-    if (nearTerm && strongValueGap)  return { leadTemperature: "hot",      resultCode: "IV_EXIT_NEAR_VALUE_GAP_HOT" };
-    if (nearTerm)                    return { leadTemperature: "warm",     resultCode: "IV_EXIT_NEAR_WEAK_SIGNAL_WARM" };
-    if (planned)                     return { leadTemperature: "warm",     resultCode: "IV_EXIT_PLANNED_WARM" };
-    if (noTimeline && strongValueGap)return { leadTemperature: "warm",     resultCode: "IV_EXIT_NO_TIMELINE_VALUE_GAP_WARM" };
-    return                                  { leadTemperature: "warm_low", resultCode: "IV_EXIT_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
+    if (nearTerm && strongValueGap)   return { leadTemperature: "hot",      resultCode: "IV_EXIT_NEAR_VALUE_GAP_HOT" };
+    if (nearTerm)                     return { leadTemperature: "warm",     resultCode: "IV_EXIT_NEAR_WEAK_SIGNAL_WARM" };
+    if (planned)                      return { leadTemperature: "warm",     resultCode: "IV_EXIT_PLANNED_WARM" };
+    if (noTimeline && strongValueGap) return { leadTemperature: "warm",     resultCode: "IV_EXIT_NO_TIMELINE_VALUE_GAP_WARM" };
+    return                                   { leadTemperature: "warm_low", resultCode: "IV_EXIT_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
   }
 
   if (eventGroup === "stakeholder_event") {
-    if (nearTerm && strongValueGap)   return { leadTemperature: "hot",      resultCode: "IV_STAKEHOLDER_NEAR_VALUE_GAP_HOT" };
-    if (nearTerm)                     return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_NEAR_WEAK_SIGNAL_WARM" };
-    if (planned && strongValueGap)    return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_PLANNED_VALUE_GAP_WARM" };
-    if (planned)                      return { leadTemperature: "warm_low", resultCode: "IV_STAKEHOLDER_PLANNED_WEAK_SIGNAL_WARM_LOW" };
-    if (noTimeline && strongValueGap) return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_NO_TIMELINE_VALUE_GAP_WARM" };
-    return                                   { leadTemperature: "warm_low", resultCode: "IV_STAKEHOLDER_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
+    if (nearTerm && strongValueGap)    return { leadTemperature: "hot",      resultCode: "IV_STAKEHOLDER_NEAR_VALUE_GAP_HOT" };
+    if (nearTerm)                      return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_NEAR_WEAK_SIGNAL_WARM" };
+    if (planned && strongValueGap)     return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_PLANNED_VALUE_GAP_WARM" };
+    if (planned)                       return { leadTemperature: "warm_low", resultCode: "IV_STAKEHOLDER_PLANNED_WEAK_SIGNAL_WARM_LOW" };
+    if (noTimeline && strongValueGap)  return { leadTemperature: "warm",     resultCode: "IV_STAKEHOLDER_NO_TIMELINE_VALUE_GAP_WARM" };
+    return                                    { leadTemperature: "warm_low", resultCode: "IV_STAKEHOLDER_NO_TIMELINE_WEAK_SIGNAL_WARM_LOW" };
   }
 
   if (eventGroup === "strategic_review") {
-    if (nearTerm && strongValueGap)   return { leadTemperature: "warm",     resultCode: "IV_STRATEGIC_NEAR_VALUE_GAP_WARM" };
-    if (nearTerm)                     return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_NEAR_WEAK_SIGNAL_WARM_LOW" };
+    if (nearTerm && strongValueGap)    return { leadTemperature: "warm",     resultCode: "IV_STRATEGIC_NEAR_VALUE_GAP_WARM" };
+    if (nearTerm)                      return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_NEAR_WEAK_SIGNAL_WARM_LOW" };
     if (planned && (strongValueGap || moderateValueGap)) {
-      return                                 { leadTemperature: "warm",     resultCode: "IV_STRATEGIC_PLANNED_VALUE_REVIEW_WARM" };
+      return                                  { leadTemperature: "warm",     resultCode: "IV_STRATEGIC_PLANNED_VALUE_REVIEW_WARM" };
     }
-    if (strongValueGap)               return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_NO_TIMELINE_VALUE_GAP_WARM_LOW" };
-    if (moderateValueGap)             return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_MODERATE_SIGNAL_WARM_LOW" };
-    return                                   { leadTemperature: "cold",     resultCode: "IV_STRATEGIC_WEAK_SIGNAL_COLD" };
+    if (strongValueGap)                return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_NO_TIMELINE_VALUE_GAP_WARM_LOW" };
+    if (moderateValueGap)              return { leadTemperature: "warm_low", resultCode: "IV_STRATEGIC_MODERATE_SIGNAL_WARM_LOW" };
+    return                                    { leadTemperature: "cold",     resultCode: "IV_STRATEGIC_WEAK_SIGNAL_COLD" };
   }
 
   // curiosity
-  if (strongValueGap)               return { leadTemperature: "warm_low", resultCode: "IV_CURIOSITY_VALUE_SIGNAL_WARM_LOW" };
-  if (nearTerm && moderateValueGap) return { leadTemperature: "warm_low", resultCode: "IV_CURIOSITY_NEAR_MODERATE_SIGNAL_WARM_LOW" };
-  return                                   { leadTemperature: "cold",     resultCode: "IV_CURIOSITY_WEAK_SIGNAL_COLD" };
+  if (strongValueGap)                return { leadTemperature: "warm_low", resultCode: "IV_CURIOSITY_VALUE_SIGNAL_WARM_LOW" };
+  if (nearTerm && moderateValueGap)  return { leadTemperature: "warm_low", resultCode: "IV_CURIOSITY_NEAR_MODERATE_SIGNAL_WARM_LOW" };
+  return                                    { leadTemperature: "cold",     resultCode: "IV_CURIOSITY_WEAK_SIGNAL_COLD" };
 }
 
 function getIvReportKey(
@@ -431,9 +400,9 @@ function calculateIvLeadScore(
 
   // Stage modifier
   const stage = answers["b_context_stage"] as string | undefined;
-  if (stage === "bootstrapped_seed")        score += 5;
-  else if (stage === "series_a_b")          score += 10;
-  else if (stage === "growth_scaleup")      score += 15;
+  if (stage === "bootstrapped_seed")          score += 5;
+  else if (stage === "series_a_b")            score += 10;
+  else if (stage === "growth_scaleup")        score += 15;
   else if (stage === "mature_profitable_sme") score += 10;
 
   // Employee modifier
@@ -445,9 +414,9 @@ function calculateIvLeadScore(
 
   // Timing modifier
   const timing = answers["b6"] as string | undefined;
-  if (timing === "now")                  score += 15;
-  else if (timing === "within_3_months") score += 10;
-  else if (timing === "within_6_months") score += 6;
+  if (timing === "now")                   score += 15;
+  else if (timing === "within_3_months")  score += 10;
+  else if (timing === "within_6_months")  score += 6;
   else if (timing === "within_12_months") score += 3;
 
   // Event modifier
@@ -456,22 +425,22 @@ function calculateIvLeadScore(
   else if (eventGroup === "strategic_review")  score += 5;
 
   // Asset signal modifier
-  if (assetSignalGroup === "strong_asset_signal")   score += 15;
+  if (assetSignalGroup === "strong_asset_signal")        score += 15;
   else if (assetSignalGroup === "moderate_asset_signal") score += 7;
 
   // Documentation modifier
-  if (documentationGroup === "partial_evidence")       score += 4;
+  if (documentationGroup === "partial_evidence")              score += 4;
   else if (documentationGroup === "weak_or_missing_evidence") score += 8;
 
   // Pain modifier
-  if (painGroup === "strong_pain")   score += 10;
+  if (painGroup === "strong_pain")        score += 10;
   else if (painGroup === "moderate_pain") score += 5;
 
   // Valuation method modifier
   const valMethod = answers["b1"] as string | undefined;
-  if (valMethod === "profit_multiple" || valMethod === "revenue_multiple") score += 3;
-  else if (valMethod === "asset_value")          score += 4;
-  else if (valMethod === "comparable_companies") score += 2;
+  if (valMethod === "profit_multiple" || valMethod === "revenue_multiple")    score += 3;
+  else if (valMethod === "asset_value")           score += 4;
+  else if (valMethod === "comparable_companies")  score += 2;
   else if (valMethod === "investor_negotiation" || valMethod === "do_not_know") score += 5;
 
   return Math.min(100, score);
@@ -489,7 +458,7 @@ export function calculateIvResult(
   );
   const eventGroup = deriveEventGroup(answers["b5"] as string | undefined);
 
-  const strongVG = hasStrongValueGap(assetSignalGroup, documentationGroup, painGroup);
+  const strongVG   = hasStrongValueGap(assetSignalGroup, documentationGroup, painGroup);
   const moderateVG = hasModerateValueGap(assetSignalGroup, documentationGroup, painGroup);
 
   const { leadTemperature, resultCode } = classifyIntangibleValue({
