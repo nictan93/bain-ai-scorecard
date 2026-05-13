@@ -164,7 +164,7 @@ Eligibility block title:
 Your company is eligible for our invoice review.
 
 Eligibility block body:
-Send us your most recent ESOP valuation invoice and get 10 percent off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is also useful for benchmarking price, quality, speed, and defensibility before your next renewal.
+Send us your most recent ESOP valuation invoice and get 10% off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is also useful for benchmarking price, quality, speed, and defensibility before your next renewal.
 
 Recommended next step overline:
 Recommended next step
@@ -255,7 +255,7 @@ Eligibility block title:
 Your company is eligible for our invoice review.
 
 Eligibility block body:
-Send us your most recent ESOP valuation invoice and get 10 percent off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is useful for benchmarking price, quality, speed, and defensibility before your next renewal.
+Send us your most recent ESOP valuation invoice and get 10% off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is useful for benchmarking price, quality, speed, and defensibility before your next renewal.
 
 Recommended next step overline:
 Recommended next step

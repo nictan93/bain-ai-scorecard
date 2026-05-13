@@ -234,7 +234,14 @@ function ResultContent() {
               {RESULT_COPY.offerBlockTitle}
             </p>
             <p className="text-sm text-text-secondary leading-relaxed">
-              {RESULT_COPY.offerBlockBody}
+              {RESULT_COPY.offerBlockBody.split("10%").map((part, i, arr) => (
+                <span key={i}>
+                  {part}
+                  {i < arr.length - 1 && (
+                    <span className="text-2xl font-bold text-state-warning">10%</span>
+                  )}
+                </span>
+              ))}
             </p>
           </div>
         )}

@@ -5,6 +5,7 @@
       "name": "ia-assessment",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
+      "cwd": "/Users/nicholas/Desktop/Claude Cowork/Bain Squared/Bain Squared/IA Valuation Assessment",
       "port": 3001
     }
   ]

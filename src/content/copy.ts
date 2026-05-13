@@ -63,7 +63,7 @@ export const RESULT_COPY = {
   // 10% offer block (shown for ESOP A2 and A3 result codes)
   offerBlockTitle: "Your company is eligible for our invoice review.",
   offerBlockBody:
-    "Send us your most recent ESOP valuation invoice and get 10 percent off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is also useful for benchmarking price, quality, speed, and defensibility before your next renewal.",
+    "Send us your most recent ESOP valuation invoice and get 10% off your next ESOP valuation report with Bain Squared. You do not need to be unhappy with your current provider to use this. The review is also useful for benchmarking price, quality, speed, and defensibility before your next renewal.",
 
   retakeLabel: "Retake the assessment",
 } as const;
