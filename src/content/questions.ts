@@ -100,19 +100,19 @@ export const QUESTIONS: Question[] = [
     track: "universal",
     order: 0,
     type: "single_select",
-    prompt: "What are you trying to solve?",
+    prompt: "Are any of the following related to what you are trying to achieve?",
     required: true,
     options: [
       {
         id: "retain_talent",
-        label: "I want to retain key employees using ESOPs.",
+        label: "I want to retain key employees using Employee Stock Options (ESOP).",
         routesTo: "esop",
         popup:
           "Good choice. ESOPs can be a powerful way to reward key employees without relying only on higher cash salaries. The next few questions will help you understand whether you may need ESOP valuation support.",
       },
       {
         id: "need_esop_support",
-        label: "I already have ESOPs and need valuation support.",
+        label: "I already issue Employee Stock Options (ESOP) and need valuation support.",
         routesTo: "esop",
         tags: ["esop_hot_lead"],
         popup:
@@ -161,7 +161,7 @@ export const QUESTIONS: Question[] = [
     track: "esop",
     order: 1,
     type: "single_select",
-    prompt: "Do you currently have an ESOP or employee share option plan?",
+    prompt: "Do you currently have an Employee Stock Options Plan (ESOP)?",
     required: true,
     options: [
       {

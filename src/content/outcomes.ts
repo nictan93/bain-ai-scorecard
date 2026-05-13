@@ -55,7 +55,7 @@ export type LeadIntent = "hot" | "warm" | "cold";
 
 const RP01: Outcome = {
   track: "esop",
-  headline: "Your ESOP valuation needs to be formalised.",
+  headline: "Your ESOP valuation needs to be done.",
   badge: "Urgent Review",
   body: "You already have an ESOP in place, but your answers suggest you have not completed a formal third-party valuation, or you cannot easily confirm that one exists.\n\nThis is a common but serious gap. When options are issued without a defensible valuation, the company takes on compliance, tax, and governance risks that only surface later during an audit, fundraising round, or sale.",
   calloutTitle: "Valuations are harder to fix retroactively.",
@@ -70,7 +70,7 @@ const RP01: Outcome = {
 
 const RP02: Outcome = {
   track: "esop",
-  headline: "Your ESOP valuation process may need an upgrade.",
+  headline: "Your ESOP valuation can be done better.",
   badge: "Provider Review",
   body: "You already have an ESOP and a formal valuation, but your answers suggest you are not fully satisfied with your current provider, or you have not reviewed them recently.\n\nThis is a good time to review the relationship. As your company grows, your valuation needs become more complex. If your provider is slow, expensive, or produces reports that are hard to defend, it creates friction with your board and auditors.",
   calloutTitle: "Do not settle for a weak report.",
@@ -85,7 +85,7 @@ const RP02: Outcome = {
 
 const RP03: Outcome = {
   track: "esop",
-  headline: "Your ESOP process appears stable, but it is still worth comparing.",
+  headline: "Your ESOP process appears ok, but it is still worth comparing.",
   badge: "Scheduled Review",
   body: "Your answers suggest that your current ESOP valuation process is not urgent today. That is a good position to be in.\n\nEven so, ESOPs need regular review as grants accumulate, valuations refresh, dilution evolves, and employee communication becomes more complex. Knowing what a more competitive option looks like is useful before the next renewal cycle, especially if your team or board are likely to ask harder questions later.",
   calloutTitle: "Good providers should still be reviewed.",
@@ -131,7 +131,7 @@ const RP05: Outcome = {
 const RP06: Outcome = {
   track: "esop",
   headline: "You are early in the ESOP process.",
-  badge: "Early planning",
+  badge: "Early Planning",
   body: "Your answers suggest you are exploring ESOP design before external pressure arrives. That is a useful place to start.\n\nAt this stage, the goal is not to rush into a valuation or legal process. The goal is to understand what decisions will matter later, especially around allocation, dilution, valuation support, and employee communication.",
   calloutTitle: "Design it as early as you can.",
   calloutBody: "Once equity expectations are discussed informally, they become harder to reset. Building the plan early gives you more control over dilution, grant logic, valuation support, and employee communication.",
@@ -146,7 +146,7 @@ const RP06: Outcome = {
 const RP07: Outcome = {
   track: "esop",
   headline: "You may need ESOP support soon.",
-  badge: "Urgent review",
+  badge: "Urgent Review",
   body: "You do not have an ESOP yet, but your answers suggest that investors, employees, auditors, or board members may soon ask questions that require a clearer position.\n\nThat means the company needs a clear answer before expectations harden, documents are prepared in a rush, or informal promises become difficult to unwind later.",
   calloutTitle: "Do not answer from memory.",
   calloutBody: "When equity questions become active, vague answers can create real issues. The company should know what exists, what has been promised, what needs to be valued, and what can be explained clearly before the next conversation.",
@@ -176,7 +176,7 @@ const RP08: Outcome = {
 const RP09: Outcome = {
   track: "esop",
   headline: "You are close to making an ESOP decision.",
-  badge: "Strategic review",
+  badge: "Strategic Review",
   body: "There may not be active pressure from employees, investors, auditors, or the board yet, but your timing suggests an ESOP decision is getting closer.\n\nThat makes this a useful moment to understand the structure before you commit to any allocation, valuation approach, employee message, or legal setup.",
   calloutTitle: "Clarity before commitment.",
   calloutBody: "ESOP decisions are easier to make when you separate the big questions early. How much equity should be allocated, how should it be valued, who should receive grants, and how should the plan be explained to the team.",
@@ -221,7 +221,7 @@ const RP11: Outcome = {
 const RP12: Outcome = {
   track: "esop",
   headline: "Start by clarifying what your ESOP should do.",
-  badge: "Strategic review",
+  badge: "Strategic Review",
   body: "Your answers suggest that you are not fully sure where your ESOP position stands today. The pressure may not be acute yet, but the question is becoming relevant enough to warrant a clear answer.\n\nThe most useful next step is to confirm what has been issued, drafted, or promised, so that any future ESOP decision starts from a known baseline rather than a guess.",
   calloutTitle: "Clarity before commitment.",
   calloutBody: "Most ESOP confusion is not malicious. It usually starts with informal promises, draft documents, or partial setups that were never fully reconciled. The earlier the company understands what is actually in place, the easier every later decision becomes.",
@@ -296,8 +296,8 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   // RP14
   hot_fundraising: {
     track: "intangible_value",
-    headline: "Your intangible value needs a clearer evidence story for investors.",
-    badge: "Urgent review",
+    headline: "Your business intangible value needs a clearer evidence story for investors.",
+    badge: "Urgent Review",
     body: "You are preparing for a fundraising round or bringing in new investors soon. Your answers suggest that some important value drivers may not yet be clearly documented or easy to explain to a third party.\n\nThis does not mean the value is not real. It usually means the evidence behind it needs to be organised in a way an investor can understand and rely on during their due diligence.",
     calloutTitle: "Investors anchor on what they can verify.",
     calloutBody: "If intangible value is not explained clearly, investors usually fall back on the simplest metrics they can verify, like revenue or profit multiples. The job is not to inflate value. The job is to make hidden value visible and defensible before the conversation starts.",
@@ -312,8 +312,8 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   // RP15
   hot_mna_exit: {
     track: "intangible_value",
-    headline: "Your intangible value needs a clearer evidence story for buyers.",
-    badge: "Urgent review",
+    headline: "Your business intangible value needs a clearer evidence story for buyers.",
+    badge: "Urgent Review",
     body: "You are considering a sale, succession, or restructuring soon. Your answers suggest that some important value drivers may not yet be clearly documented or easy to explain to a buyer.\n\nThis does not mean the value is not real. It usually means the evidence behind it needs to be organised in a way a buyer can rely on during due diligence.",
     calloutTitle: "Buyers discount what they cannot verify.",
     calloutBody: "In a negotiation, value that cannot be evidenced is usually treated as risk. Strong contracts, customer relationships, systems, data, brand, software, and IP need a clear evidence story before buyers will give them full weight in a transaction.",
@@ -328,8 +328,8 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   // RP16
   hot_stakeholder: {
     track: "intangible_value",
-    headline: "Your intangible value needs a clearer evidence story for stakeholders.",
-    badge: "Urgent review",
+    headline: "Your business intangible value needs a clearer evidence story for stakeholders.",
+    badge: "Urgent Review",
     body: "You may need to explain company value to a board, bank, auditor, partner, investor, or other stakeholder soon. Your answers suggest that some important value drivers may not yet be clearly documented or easy to explain to a third party.\n\nThis does not mean the value is not real. It usually means the evidence behind it needs to be organised in a way an outsider can understand and rely on.",
     calloutTitle: "Stakeholders trust structured evidence more than confident claims.",
     calloutBody: "Boards, banks, auditors, and partners are usually persuaded by structure, not enthusiasm. A clear intangible asset map turns hidden value into a credible answer when the harder questions arrive.",
@@ -344,8 +344,8 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   // RP17
   warm_fundraising: {
     track: "intangible_value",
-    headline: "Your intangible value may matter in a future fundraising discussion.",
-    badge: "Planning window",
+    headline: "Your business intangible value may matter in a future fundraising discussion.",
+    badge: "High Urgency",
     body: "You are thinking about fundraising, bringing in investors, or strengthening your investor narrative. Your answers suggest that some of your company value may sit outside standard financial metrics, even if the timing is not urgent yet.\n\nThis may include recurring revenue, customer relationships, long-term contracts, brand, software, data, IP, or operating systems. These assets are easier to explain when they are mapped before investor pressure begins.",
     calloutTitle: "Prepare the evidence before the conversation needs it.",
     calloutBody: "Investors are easier to convince when intangibles are mapped, documented, and explained on your terms. Preparing earlier gives you more control over the valuation narrative when fundraising actually starts.",
@@ -360,8 +360,8 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   // RP18
   warm_mna_exit: {
     track: "intangible_value",
-    headline: "Your intangible value may matter in a future sale, succession, or ownership discussion.",
-    badge: "Planning window",
+    headline: "Your business intangible value may matter in a future sale, succession, or ownership discussion.",
+    badge: "High Urgency",
     body: "Your answers suggest that buyers or stakeholders may eventually ask for clearer evidence of value beyond the financial statements. The timing may not be urgent yet, but the preparation usually pays off later.\n\nA buyer or incoming shareholder will usually focus on what can be verified. The more clearly intangible value is documented, the easier it becomes to defend the value of the business when the conversation does happen.",
     calloutTitle: "The earlier you organise the evidence, the stronger your position.",
     calloutBody: "Exit value is shaped long before formal negotiations. If brand, contracts, customer relationships, software, data, or IP are clearly documented, they are far more likely to be treated as enterprise value rather than vague upside.",
@@ -377,7 +377,7 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   warm_stakeholder: {
     track: "intangible_value",
     headline: "Your business may have intangible value that is worth mapping properly.",
-    badge: "Discovery window",
+    badge: "Discovery",
     body: "Your answers suggest that the business may have value drivers that are not fully captured by ordinary profit, revenue, asset, or comparable company valuation. This may include customer relationships, recurring revenue, long-term contracts, software, data, IP, brand, specialist knowledge, or operating systems.\n\nThe next step is usually to understand which of these are real valuation assets, what evidence already supports them, and what still needs to be developed.",
     calloutTitle: "Intangible value becomes useful when it is structured.",
     calloutBody: "A clear asset map helps you understand what matters, what can already be evidenced, and what still needs work. This turns a soft sense of value into something specific you can show, defend, and build on as the business grows.",
@@ -393,7 +393,7 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   warm_starter: {
     track: "intangible_value",
     headline: "You are early in the intangible value discovery process.",
-    badge: "Starter review",
+    badge: "Starter Review",
     body: "Your answers suggest that intangible value may be relevant to your business, but the signal is still early. There may not be a strong asset signal, clear documentation, or specific concern yet, and that is a perfectly normal place to start.\n\nThe useful next step is to learn what to look for, which categories of intangible value most often matter, and what evidence usually supports them as the business grows.",
     calloutTitle: "Learning the basics now makes future events easier.",
     calloutBody: "Many companies only start thinking about intangible value when a fundraising round, sale conversation, or board review is already underway. Understanding the categories early helps you know what to track before the pressure begins.",
@@ -409,7 +409,7 @@ const IV_OUTCOMES: Record<IvPageKey, Outcome> = {
   cold_starter: {
     track: "intangible_value",
     headline: "Your intangible value signal appears early or unclear.",
-    badge: "Education track",
+    badge: "Education",
     body: "Based on your answers, there may not be a strong near-term intangible value issue yet. There is no specific event, the asset signal is still early, and there is no clear evidence gap.\n\nThat is perfectly fine. It does not mean your business lacks value. It usually means the relevant value drivers may need to be developed, tracked, or mapped more clearly over time.",
     calloutTitle: "Keep the guide for when the timing is right.",
     calloutBody: "Intangible value becomes more important when fundraising, exit discussions, board scrutiny, or large customer or partner relationships start to depend on a clearer story. The starter guide helps you know what to watch for as that point approaches.",

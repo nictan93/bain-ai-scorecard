@@ -45,14 +45,14 @@ const BOOKING_URL    = "https://cal.com/bain-squared/ia-valuation";
 // Replace each value with the Drive file ID from the shareable link:
 //   https://drive.google.com/file/d/FILE_ID/view
 const PDF_FILE_IDS = {
-  esop_compliance_governance:          "REPLACE_WITH_DRIVE_FILE_ID",
-  esop_structuring_dilution:           "REPLACE_WITH_DRIVE_FILE_ID",
-  esop_communication_legal:            "REPLACE_WITH_DRIVE_FILE_ID",
-  esop_starter:                        "REPLACE_WITH_DRIVE_FILE_ID",
-  iv_fundraising_guide:                "REPLACE_WITH_DRIVE_FILE_ID",
-  iv_mna_exit_guide:                   "REPLACE_WITH_DRIVE_FILE_ID",
-  iv_intangible_asset_discovery_guide: "REPLACE_WITH_DRIVE_FILE_ID",
-  iv_starter_guide:                    "REPLACE_WITH_DRIVE_FILE_ID"
+  esop_compliance_governance:          "1NSJ1ns8LPQPnrJiHSDyLPpKLmWsvwPnm",
+  esop_structuring_dilution:           "13veMiJKh6kMi0TNwl3YSR-r4F1OZSG46",
+  esop_communication_legal:            "1WUIJGy3-OoRCCd_qJ5LkwAKruMkRgoPs",
+  esop_starter:                        "1LL0GqVVF034jrAulxrJ2ehqeBkTIn2JP",
+  iv_fundraising_guide:                "1IoqOf67VVA7Jsf2Kn8hKDWLiJ4JJyezZ",
+  iv_mna_exit_guide:                   "17gqGLZ8JUaDyC-11Ufl8f7-e5hZQwH4_",
+  iv_intangible_asset_discovery_guide: "1YXgTVdDvQIjnXYIKRj5__AyH9alL2TXr",
+  iv_starter_guide:                    "18l1YdEjiqeQ3TWpel0Xx6Ug84_OIVvpU"
 };
 
 const PDF_DISPLAY_TITLES = {
